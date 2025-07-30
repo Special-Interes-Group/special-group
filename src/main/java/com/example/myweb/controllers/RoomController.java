@@ -312,7 +312,7 @@ public class RoomController {
                                     new Room.RoleInfo("錯誤", "角色數量與玩家人數不符")));
         }
 
-        Collections.shuffle(players);
+        
         Collections.shuffle(roles);
 
         Map<String, Room.RoleInfo> assigned = new HashMap<>();
@@ -321,6 +321,8 @@ public class RoomController {
         }
 
         room.setAssignedRoles(assigned);
+        room.setCurrentLeaderIndex(0); // ✅ 領袖從 players[0] 開始
+        room.setLeader(players.get(0)); // ✅ 指定領袖名稱（供前端使用）
         roomService.generateSkillOrder(room); 
         roomRepository.save(room);
         simpMessagingTemplate.convertAndSend("/topic/room/" + roomId, "startRealGame");

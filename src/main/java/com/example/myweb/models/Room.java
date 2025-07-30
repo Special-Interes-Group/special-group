@@ -38,8 +38,8 @@ public class Room {
     /* 狀態旗標 */
     private boolean started = false;
 
-    /* 當前領袖 */
-    private String currentLeader;
+
+
 
     /* ========== 🔥 投票相關欄位 ========== */
     /** 本輪被提名出戰的玩家清單 */
@@ -95,9 +95,6 @@ public class Room {
 
     public boolean isStarted() { return started; }
     public void    setStarted(boolean started) { this.started = started; }
-
-    public String getCurrentLeader() { return currentLeader; }
-    public void   setCurrentLeader(String currentLeader) { this.currentLeader = currentLeader; }
 
     
     
@@ -275,4 +272,23 @@ public class Room {
     public void setFailCount(int failCount) {
         this.failCount = failCount;
     }
+
+    private int currentLeaderIndex;
+    private String leader;
+
+    public int getCurrentLeaderIndex() {
+        return currentLeaderIndex;
+    }
+
+    public void setCurrentLeaderIndex(int currentLeaderIndex) {
+        this.currentLeaderIndex = currentLeaderIndex;
+    }
+
+    public String getCurrentLeader() {
+        return leader;
+    }
+
+    public void setLeader(String leader) {
+        this.leader = leader;
+}
 }
