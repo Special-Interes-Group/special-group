@@ -62,7 +62,6 @@ public class Room {
     private Map<String, Integer> missionFail = new HashMap<>();
     private int successCount = 0;
     private int failCount = 0;
-    private int leaderIndex = 0;
 
     
     /* ========== Getter / Setter ========== */
@@ -276,7 +275,4 @@ public class Room {
     public void setFailCount(int failCount) {
         this.failCount = failCount;
     }
-
-    public int getLeaderIndex() { return leaderIndex; }
-    public void setLeaderIndex(int leaderIndex) { this.leaderIndex = leaderIndex; }
 }

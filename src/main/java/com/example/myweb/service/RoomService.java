@@ -101,7 +101,7 @@ public class RoomService {
         }
 
         List<String> valid = room.getPlayers().stream().filter(s -> !s.isBlank()).toList();
-        String picked = valid.get(0); // 依順序指定第一位玩家為領袖
+        String picked = valid.get(new Random().nextInt(valid.size()));
         room.setCurrentLeader(picked);
 
         roomRepo.save(room);
@@ -115,9 +115,7 @@ public class RoomService {
         Room room = getRoomById(roomId);
         room.setCurrentExpedition(expedition);
         room.setVoteMap(new HashMap<>());
-        List<String> players = room.getPlayers();
-        room.setCurrentLeader(players.get(room.getLeaderIndex()));
-        room.setLeaderIndex((room.getLeaderIndex() + 1) % players.size());
+        room.setCurrentLeader(leader);
         roomRepo.save(room);
 
         ws.convertAndSend("/topic/vote/" + roomId, Map.of(
