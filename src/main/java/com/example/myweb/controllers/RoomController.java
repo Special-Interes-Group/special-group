@@ -471,17 +471,31 @@ public class RoomController {
 
         Map<String, RoleInfo> roles = room.getAssignedRoles();
         List<String> remainingRoles = new ArrayList<>();
+        Set<String> blockedRoles = new HashSet<>();
+
+        int currentRound = room.getCurrentRound();
+        Set<String> disabledPlayers = room.getShadowDisabledMap().getOrDefault(currentRound, Set.of());
 
         for (String player : roles.keySet()) {
             String role = roles.get(player).getName();
 
             if (isSkillRole(role)) {
-                remainingRoles.add(role);  // ✅ 一律加進來，不管封鎖與否
+                remainingRoles.add(role); // 一律加進去
+            }
+
+            // 若角色為工程師 且 被封鎖，則加入 blockedRoles
+            if ("工程師".equals(role) && disabledPlayers.contains(player)) {
+                blockedRoles.add("工程師");
             }
         }
 
-        return ResponseEntity.ok(Map.of("remainingRoles", remainingRoles));
+        Map<String, Object> response = new HashMap<>();
+        response.put("remainingRoles", remainingRoles);
+        response.put("blockedRoles", blockedRoles);  // 新增：被封鎖的角色集合
+
+        return ResponseEntity.ok(response);
     }
+
 
     // 角色是否為技能角色
     private boolean isSkillRole(String role) {
