@@ -112,24 +112,34 @@ function connectSkillPhase() {
 // ✅ 工程師
 async function showEngineerResult() {
   try {
-    const res = await fetch(`/api/room/${roomId}`);
-    const room = await res.json();
+    const [roomRes, stateRes] = await Promise.all([
+      fetch(`/api/room/${roomId}`),
+      fetch(`/api/room/${roomId}/skill-state`)
+    ]);
+
+    const room = await roomRes.json();
+    const state = await stateRes.json();
     const round = room.currentRound;
     const result = room.missionResults?.[round];
+    const blockedRoles = state.blockedRoles || [];
 
     engineerPanel.classList.remove("hidden");
 
-    if (result) {
-      successCountEl.textContent = result.successCount;
-      failCountEl.textContent = result.failCount;
-    } else {
-      successCountEl.textContent = "尚未送出";
-      failCountEl.textContent = "尚未送出";
+    // ✅ 若工程師被封鎖，顯示提示文字，並跳出
+    if (blockedRoles.includes("工程師")) {
+      engineerPanel.innerHTML = `<p style="color:red; font-weight:bold;">{你的技能已被封鎖!}</p>`;
+      return;
     }
+
+    // ✅ 正常顯示成功/失敗數
+    successCountEl.textContent = result ? result.successCount : "尚未送出";
+    failCountEl.textContent    = result ? result.failCount : "尚未送出";
+
   } catch (err) {
     console.error("❌ 工程師任務結果讀取失敗", err);
   }
 }
+
 
 // ✅ 潛伏者
 async function fetchLurkerTargets() {
