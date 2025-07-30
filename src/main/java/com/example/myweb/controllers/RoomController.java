@@ -465,6 +465,10 @@ public class RoomController {
         List<String> order = roomService.generateSkillOrder(room);
         return ResponseEntity.ok(order);
     }
+
+
+
+    
     
     @GetMapping("/room/{roomId}/skill-state")
     public ResponseEntity<?> getSkillState(@PathVariable String roomId) {
