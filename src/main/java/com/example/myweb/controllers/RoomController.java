@@ -674,8 +674,8 @@ public class RoomController {
 
         String roleName = roleInfo.getName();
         String faction = switch (roleName) {
-            case "工程師", "醫護兵", "指揮官", "普通倖存者" -> "正義";
-            case "潛伏者", "破壞者", "影武者", "邪惡平民" -> "邪惡";
+            case "工程師", "醫護兵", "指揮官", "普通倖存者", "影武者" -> "正義";
+            case "潛伏者", "破壞者", "邪惡平民" -> "邪惡";
             default -> "未知";
         };
 
