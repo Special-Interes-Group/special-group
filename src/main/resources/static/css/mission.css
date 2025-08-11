@@ -1,3 +1,4 @@
+/* mission.css — 取代整檔 */
 body {
   margin: 0;
   padding: 0;
@@ -25,24 +26,24 @@ body {
   justify-content: center;
 }
 
-/* 成功卡片按鈕背景圖 */
-#fail-btn{
+/* 失敗 / 成功卡片 */
+#fail-btn,
+#success-btn {
   width: 270px;
   height: 390px;
-  background: url("/images/card-failure.png") center/cover no-repeat;
-  border: none;
+  background-position: center;
+  background-repeat: no-repeat;
   background-size: contain;
+  border: none;
+  outline: none;
+  box-shadow: none;                 /* ← 不要任何陰影 */
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* 失敗卡片按鈕背景圖 */
- #success-btn {
-  width: 270px;
-  height: 390px;
-  background: url("/images/card-successful.png") center/cover no-repeat;
-  border: none;
-  background-size: contain;
-}
+#fail-btn    { background-image: url("/images/card-failure.png"); }
+#success-btn { background-image: url("/images/card-successful.png"); }
 
+/* 送出按鈕 */
 #confirm-btn {
   padding: 12px 32px;
   font-size: 18px;
@@ -53,23 +54,30 @@ body {
   cursor: pointer;
   transition: transform 0.2s ease;
   margin-top: -20px;
-
 }
+#confirm-btn:hover:not(:disabled) { transform: scale(1.05); }
 
-#confirm-btn:hover:not(:disabled) {
-  transform: scale(1.05);
-}
-
-
-/* 公用按鈕樣式移除原本背景設定 */
+/* 公用按鈕：移除瀏覽器預設外框與陰影 */
 button {
   background: none;
   color: inherit;
   cursor: pointer;
-  transition: transform 0.2s ease;
+  transition: transform 0.18s ease;
+  outline: none;
+  box-shadow: none;                 /* ← 點下去也不要陰影 */
+  border: none;
 }
-button:hover:not(:disabled) {
-  transform: scale(1.05);
+button:focus,
+button:active {
+  outline: none;
+  box-shadow: none;                 /* ← 確保 focus/active 都沒有陰影 */
+}
+
+/* 滑過或選取：僅做放大＋微上移，營造「浮起來」的立體感 */
+button:hover:not(:disabled),
+button.selected {
+  transform: scale(1.08) translateY(-6px);
+  z-index: 2;
 }
 
 button:disabled {
@@ -77,16 +85,7 @@ button:disabled {
   cursor: default;
 }
 
-button.selected {
-  outline: none;
-}
 
 
-.hidden {
-  display: none;
-}
-button.selected {
-  transform: scale(1.2);
-  z-index: 2;
-  box-shadow: 0 0 12px rgba(0,0,0,0.4);
-}
+/* 顯示/隱藏 */
+.hidden { display: none; }

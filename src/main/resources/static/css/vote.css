@@ -5,20 +5,13 @@ body {
   height: 100vh;
   position: relative;
   background: url('/images/game-background.png') center/cover no-repeat;
-  background-position: center center;
-  background-attachment: fixed;
-  overflow: hidden; /* ✅ 隱藏右側滾動條 */
 }
 
-/* 整體放大 */
 #vote-container {
   background: transparent;
   border-radius: 12px;
-  padding: 42px 56px 30px;  /* ✅ 下方 padding 改小 */
-  box-shadow: 0 6px 18px rgba(0, 0, 0, .18);
+  padding: 42px 56px 30px;
   text-align: center;
-  transform: scale(1.15);
-  transform-origin: center;
 }
 
 h1 {
@@ -50,7 +43,7 @@ h1 {
   position: relative;
   margin-top: 50px;
   width: 60%;
-  aspect-ratio: 1/1; /* 保持正方形比例 */
+  aspect-ratio: 1/1;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -61,29 +54,27 @@ h1 {
   height: 100%;
   border-radius: 50%;
   object-fit: cover;
-  transform: translateY(-20px); /* 頭像上移 */
-  border: 4px solid black;     /* ✅ 黑色邊框 */
-  box-shadow: none;            /* ✅ 移除陰影 */
+  transform: translateY(-20px);
+  border: 4px solid black;
 }
 
 .exp-name {
   margin-top: 20px;
- margin-bottom: 10px;
+  margin-bottom: 10px;
   font-size: 20px;
   font-weight: bold;
   color: #333;
   text-align: center;
-   transform: translateY(-20px); 
+  transform: translateY(-20px);
 }
 
-/* 投票結果與按鈕 */
 #vote-result p {
   margin: 8px 0;
   font-size: 24px;
 }
 
 #vote-buttons {
-  margin-top: 10px; /* ✅ 按鈕整區往上移 */
+  margin-top: 10px;
 }
 
 #vote-buttons button {
@@ -131,8 +122,8 @@ h1 {
 
 #timer {
   position: fixed;
-  top: 45px;     /* 原本是 20px，+25 向下 */
-  right: 80px;   /* 原本是 30px，+20 向左 */
+  top: 20px;
+  right: 30px;
   font-size: 22px;
   color: white;
   background: rgba(0, 0, 0, 0.5);

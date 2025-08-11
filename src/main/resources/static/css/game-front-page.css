@@ -146,11 +146,10 @@ body{
   text-align: center;
 }
 
-/* ✅ 右上角統計顯示區塊 */
-.top-right-stats {
+.bottom-left-stats {
   position: fixed;
-  top: 100px; /* ✅ 原本 10px，往下移一點 */
-  right: 20px;
+  bottom: 20px;
+  left: 20px;
   background-color: #ffffffdd;
   padding: 10px 15px;
   border-radius: 10px;

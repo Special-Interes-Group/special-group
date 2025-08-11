@@ -4,14 +4,11 @@
   <meta charset="UTF-8" />
   <title>遊戲開始畫面</title>
   <link rel="stylesheet" href="/css/game-front-page.css" />
-  <link rel="stylesheet" href="/css/chatroom.css" />
   <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
 </head>
 <body>
-
-
-  <!-- ✅ 修改：左上角顯示輪數 -->
+  <!-- 左上角：顯示輪數 -->
   <div id="round-label" class="top-left">第 1 輪</div>
 
   <div class="top-right">
@@ -20,14 +17,10 @@
 
   <div class="player-circle" id="player-container"></div>
 
- 
-
+  <!-- 右下角：以 chat.png 作為「語音聊天室」按鈕 -->
   <div class="bottom-right">
-    <img src="/images/chat.png" alt="聊天室" class="icon" />
+    <img id="voice-toggle-img" src="/images/chat.png" alt="語音聊天室" class="icon" />
   </div>
-
-
-  
 
   <!-- 領袖專用按鈕 -->
   <div class="bottom-center hidden" id="leader-action">
@@ -43,18 +36,6 @@
     </div>
   </div>
 
-  <!-- 聊天室 -->
-  <div id="chat-overlay" class="overlay hidden">
-    <div class="chatroom">
-      <button id="close-btn">&times;</button>
-      <div class="chat-messages" id="chat-messages"></div>
-      <div class="chat-input">
-        <input type="text" id="message-input" placeholder="輸入訊息">
-        <button id="send-btn">送出</button>
-      </div>
-    </div>
-  </div>
-
   <!-- 出戰人員選擇彈窗 -->
   <div id="select-modal" class="select-modal hidden">
     <div class="select-box">
@@ -65,31 +46,28 @@
     </div>
   </div>
 
-  <!-- ✅ 中央顯示：本回合結果（成功/失敗數） -->
+  <!-- 中央顯示：本回合結果（成功/失敗數） -->
   <div id="round-result-popup" class="round-popup hidden">
     <div id="round-result-text"></div>
   </div>
 
-  <!-- ✅ 右上角統計：總成功與失敗 -->
-  <div id="overall-stats" class="top-right-stats">
+  <!-- 總成功/失敗：改成左下角白色框 -->
+  <div id="overall-stats" class="bottom-left-stats">
     <div>正方成功：<span id="success-count">0</span></div>
     <div>反方成功：<span id="fail-count">0</span></div>
   </div>
-  <!-- ✅ 語音區塊（可切換顯示） -->
-  <div id="voice-container" style="position:fixed; bottom:10px; left:10px; width:300px; height:200px; border:1px solid #ccc; border-radius:8px; overflow:hidden; display:none; z-index:9999;">
-    <iframe
-      id="voice-iframe"
-      allow="camera; microphone"
-      style="width:100%; height:100%; border:0;"
-      allowfullscreen
-    ></iframe>
+
+  <!-- 語音容器：顯示在右下角按鈕上方（預設隱藏） -->
+  <div id="voice-container"
+       style="position:fixed; bottom:110px; right:10px; width:360px; height:240px;
+              border:1px solid #ccc; border-radius:8px; overflow:hidden; display:none; z-index:9999; background:#fff;">
+    <iframe id="voice-iframe"
+            allow="camera; microphone"
+            style="width:100%; height:100%; border:0;"
+            allowfullscreen>
+    </iframe>
   </div>
 
-  <!-- ✅ 切換語音顯示按鈕 -->
-  <button id="toggle-voice-btn" style="position:fixed; bottom:10px; left:10px; z-index:10000;">開啟語音</button>
-
-
   <script src="/js/game-front-page.js" defer></script>
-  <script src="/js/chatroom.js" defer></script>
 </body>
 </html>
