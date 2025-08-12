@@ -1,17 +1,18 @@
+/* ====== 基本 ====== */
 body {
-    font-family: 'Noto Sans TC', sans-serif;
-    background-color: #604646; /* 深灰背景 */
-    color: #fff;
-    text-align: center;
-    margin: 0;
-    padding: 0;
-    background-image: url('/images/background1.png'); /* 使用背景圖片 */
-    background-size: cover; /* 背景圖片自動填充 */
-    background-position: center center; /* 背景圖片居中 */
-    background-attachment: fixed; /* 背景固定 */
-    background-repeat: no-repeat; /* 防止圖片重複 */
-    width: 100%;
-    height: 100%;
+  font-family: 'Noto Sans TC', sans-serif;
+  background-color: #604646;
+  color: #fff;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+  background-image: url('/images/background1.png');
+  background-size: cover;
+  background-position: center center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  width: 100%;
+  height: 100%;
 }
 
 .container {
@@ -19,6 +20,17 @@ body {
   margin-top: 50px;
 }
 
+#title {
+  width: 550px;
+  max-width: 85%;
+  height: auto;
+  display: block;
+  margin: 5px auto;
+  margin-top: -130px;
+  margin-bottom: -125px;
+}
+
+/* ====== 頭貼區 ====== */
 .avatar-selection {
   display: flex;
   justify-content: center;
@@ -33,19 +45,32 @@ body {
   border: 3px solid transparent;
   border-radius: 50%;
   cursor: pointer;
-  transition: border 0.3s, box-shadow 0.3s;
   position: relative;
+  transition: transform 0.2s, border 0.3s, box-shadow 0.3s;
+  outline: none;
 }
 
+/* 滑過時一點立體感（非必需） */
+.avatar-option:hover {
+  transform: translateY(-1px);
+}
+
+/* 鍵盤可見焦點（配合 JS 設定 tabindex/role） */
+.avatar-option:focus-visible {
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.25);
+}
+
+/* 被選取的樣式：框線 + 光暈 + 微放大 */
 .avatar-option.selected {
   border-color: rgb(82, 39, 0);
   box-shadow: 0 0 10px rgb(139, 69, 0);
+  transform: scale(1.05);
 }
 
-/* ✅ 打勾符號疊在頭貼右下角 */
+/* 打勾符號疊在頭貼右下角 */
 .avatar-option.selected::after {
   content: '✔';
-  color: white;
+  color: #fff;
   background-color: red;
   border-radius: 50%;
   padding: 2px 5px;
@@ -55,46 +80,43 @@ body {
   right: -8px;
 }
 
-.confirm-button {
-  padding: 10px 20px;
-  font-size: 18px;
-  border: none;
-  background-color: #8f480a;
-  color: white;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.confirm-button:disabled {
-  background-color:#8f480a;
-  color: #eee;
-  cursor: not-allowed;
-  opacity: 0.7;
-}
-
+/* ====== 按鈕 ====== */
+.confirm-button,
 .start-button {
   padding: 10px 20px;
   font-size: 18px;
   border: none;
   background-color: #8f480a;
-  color: white;
+  color: #fff;
   border-radius: 10px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.start-button {
   margin-left: 10px;
 }
 
-.start-button:hover {
-  background-color: #8f480a;
+/* 可點擊時的 hover/press 回饋 */
+.confirm-button:hover:not(:disabled),
+.start-button:hover:not(:disabled) {
+  background-color: #a05710; /* 稍亮一點的咖啡色 */
 }
 
-#title {
-    width: 550px;
-    max-width: 85%;
-    height: auto;
-    display: block;
-    margin: 5px auto;
-    margin-top: -130px;
-    margin-bottom: -125px;
+.confirm-button:active:not(:disabled),
+.start-button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+/* 禁用狀態（未選頭貼前） */
+.confirm-button:disabled {
+  background-color: #8f480a;
+  color: #eee;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* 保持開始按鈕 hover 顏色一致（你原本的設定） */
+.start-button:hover {
+  background-color: #8f480a;
 }
