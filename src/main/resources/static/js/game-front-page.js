@@ -301,14 +301,16 @@ async function fetchMissionSummary() {
   }
 }
 
-/* =======================
-   DOMContentLoaded (新版)
-   ======================= */
 document.addEventListener("DOMContentLoaded", async () => {
   // ✅ 語音區塊控制（改用右下角 chat.png 圖示）
   const voiceContainer = document.getElementById("voice-container");
   const voiceIframe    = document.getElementById("voice-iframe");
+  const voiceHeader    = document.getElementById("voice-header"); // 拖曳把手
   const voiceToggleImg = document.getElementById("voice-toggle-img");
+
+  // 預設清除 bottom/right 避免干擾拖曳
+  voiceContainer.style.bottom = "auto";
+  voiceContainer.style.right  = "auto";
 
   voiceToggleImg?.addEventListener("click", () => {
     const visible = voiceContainer.style.display !== "none" && voiceContainer.style.display !== "";
@@ -318,11 +320,77 @@ document.addEventListener("DOMContentLoaded", async () => {
       const jitsiRoom    = `${jitsiProject}-${roomId}`;
       voiceIframe.src    = `${jitsiBase}/${jitsiRoom}#config.startWithAudioMuted=true&config.startWithVideoMuted=true`;
       voiceContainer.style.display = "block";
+      voiceContainer.style.position = "fixed";
+
+      // ✅ 初始化定位（只在打開當下或尚未設定時做）
+      if (!voiceContainer.style.left || !voiceContainer.style.top) {
+        const vw = window.innerWidth, vh = window.innerHeight;
+        const w  = voiceContainer.offsetWidth;
+        const h  = voiceContainer.offsetHeight;
+        voiceContainer.style.left = (vw - w - 10) + "px";
+        voiceContainer.style.top  = (vh - h - 110) + "px";
+      }
     } else {
       voiceContainer.style.display = "none";
       voiceIframe.src = "";
     }
   });
+
+  // —— Jitsi 浮窗拖曳邏輯（用 header 當把手）——
+  let dragging = false;
+  let startX = 0, startY = 0, startLeft = 0, startTop = 0;
+
+  const startDrag = (clientX, clientY) => {
+    dragging = true;
+    const rect = voiceContainer.getBoundingClientRect();
+    startLeft = rect.left;
+    startTop  = rect.top;
+    startX = clientX;
+    startY = clientY;
+    document.body.style.userSelect = "none"; // 防止文字選取
+  };
+
+  const onMove = (clientX, clientY) => {
+    if (!dragging) return;
+    const dx = clientX - startX;
+    const dy = clientY - startY;
+
+    let nextLeft = startLeft + dx;
+    let nextTop  = startTop  + dy;
+
+    // 邊界限制
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const w  = voiceContainer.offsetWidth;
+    const h  = voiceContainer.offsetHeight;
+
+    nextLeft = Math.min(Math.max(nextLeft, 0), vw - w);
+    nextTop  = Math.min(Math.max(nextTop,  0), vh - h);
+
+    voiceContainer.style.left = nextLeft + "px";
+    voiceContainer.style.top  = nextTop  + "px";
+  };
+
+  const endDrag = () => {
+    dragging = false;
+    document.body.style.userSelect = "";
+  };
+
+  // 滑鼠事件
+  voiceHeader?.addEventListener("mousedown", (e) => startDrag(e.clientX, e.clientY));
+  document.addEventListener("mousemove", (e) => onMove(e.clientX, e.clientY));
+  document.addEventListener("mouseup", endDrag);
+
+  // 觸控事件
+  voiceHeader?.addEventListener("touchstart", (e) => {
+    const t = e.touches[0];
+    startDrag(t.clientX, t.clientY);
+  }, { passive: true });
+  document.addEventListener("touchmove", (e) => {
+    const t = e.touches[0];
+    onMove(t.clientX, t.clientY);
+  }, { passive: false });
+  document.addEventListener("touchend", endDrag);
 
   // ⬇️ 原本初始化流程照常
   await fetch(`/api/room/${roomId}/assign-roles`, { method: 'POST' });
