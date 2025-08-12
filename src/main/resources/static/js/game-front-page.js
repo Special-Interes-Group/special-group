@@ -300,18 +300,19 @@ async function fetchMissionSummary() {
     console.error("❌ 無法取得任務結果", err);
   }
 }
-
 document.addEventListener("DOMContentLoaded", async () => {
   // ✅ 語音區塊控制（改用右下角 chat.png 圖示）
   const voiceContainer = document.getElementById("voice-container");
   const voiceIframe    = document.getElementById("voice-iframe");
   const voiceHeader    = document.getElementById("voice-header"); // 拖曳把手
   const voiceToggleImg = document.getElementById("voice-toggle-img");
+  const resizeHandle   = document.getElementById("voice-resize-handle"); // 專用縮放把手
 
   // 預設清除 bottom/right 避免干擾拖曳
   voiceContainer.style.bottom = "auto";
   voiceContainer.style.right  = "auto";
 
+  // 開關語音視窗
   voiceToggleImg?.addEventListener("click", () => {
     const visible = voiceContainer.style.display !== "none" && voiceContainer.style.display !== "";
     if (!visible) {
@@ -322,7 +323,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       voiceContainer.style.display = "block";
       voiceContainer.style.position = "fixed";
 
-      // ✅ 初始化定位（只在打開當下或尚未設定時做）
+      // ✅ 初始化定位（只在第一次打開或尚未設定 left/top 時做）
       if (!voiceContainer.style.left || !voiceContainer.style.top) {
         const vw = window.innerWidth, vh = window.innerHeight;
         const w  = voiceContainer.offsetWidth;
@@ -336,19 +337,26 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
-  // —— Jitsi 浮窗拖曳邏輯（用 header 當把手）——
+  // —— 拖曳邏輯（只允許從 header 拖曳）——
   let dragging = false;
   let startX = 0, startY = 0, startLeft = 0, startTop = 0;
 
-  const startDrag = (clientX, clientY) => {
-    dragging = true;
-    const rect = voiceContainer.getBoundingClientRect();
-    startLeft = rect.left;
-    startTop  = rect.top;
-    startX = clientX;
-    startY = clientY;
-    document.body.style.userSelect = "none"; // 防止文字選取
-  };
+const startDrag = (clientX, clientY, target) => {
+  // 如果點擊的是縮放把手，直接不啟動拖曳
+  if (resizeHandle && resizeHandle.contains(target)) return;
+
+  // 只允許從 header 拖曳
+  if (!voiceHeader.contains(target)) return;
+
+  dragging = true;
+  const rect = voiceContainer.getBoundingClientRect();
+  startLeft = rect.left;
+  startTop  = rect.top;
+  startX = clientX;
+  startY = clientY;
+  document.body.style.userSelect = "none";
+};
+
 
   const onMove = (clientX, clientY) => {
     if (!dragging) return;
@@ -358,7 +366,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     let nextLeft = startLeft + dx;
     let nextTop  = startTop  + dy;
 
-    // 邊界限制
     const vw = window.innerWidth;
     const vh = window.innerHeight;
     const w  = voiceContainer.offsetWidth;
@@ -376,21 +383,47 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.body.style.userSelect = "";
   };
 
-  // 滑鼠事件
-  voiceHeader?.addEventListener("mousedown", (e) => startDrag(e.clientX, e.clientY));
+  voiceHeader?.addEventListener("mousedown", (e) => startDrag(e.clientX, e.clientY, e.target));
   document.addEventListener("mousemove", (e) => onMove(e.clientX, e.clientY));
   document.addEventListener("mouseup", endDrag);
 
-  // 觸控事件
   voiceHeader?.addEventListener("touchstart", (e) => {
     const t = e.touches[0];
-    startDrag(t.clientX, t.clientY);
+    startDrag(t.clientX, t.clientY, e.target);
   }, { passive: true });
   document.addEventListener("touchmove", (e) => {
     const t = e.touches[0];
     onMove(t.clientX, t.clientY);
   }, { passive: false });
   document.addEventListener("touchend", endDrag);
+
+  // —— 專用縮放把手邏輯 —— 
+  let resizing = false;
+  let startWidth = 0, startHeight = 0;
+
+  resizeHandle?.addEventListener("mousedown", (e) => {
+    e.preventDefault();
+    resizing = true;
+    startWidth = voiceContainer.offsetWidth;
+    startHeight = voiceContainer.offsetHeight;
+    startX = e.clientX;
+    startY = e.clientY;
+    document.body.style.userSelect = "none";
+  });
+
+document.addEventListener("mousemove", (e) => {
+  if (!resizing) return;
+  const newWidth = startWidth + (e.clientX - startX);
+  const newHeight = startHeight + (e.clientY - startY);
+  voiceContainer.style.width = newWidth + "px";
+  voiceContainer.style.height = newHeight + "px";
+});
+
+
+  document.addEventListener("mouseup", () => {
+    resizing = false;
+    document.body.style.userSelect = "";
+  });
 
   // ⬇️ 原本初始化流程照常
   await fetch(`/api/room/${roomId}/assign-roles`, { method: 'POST' });

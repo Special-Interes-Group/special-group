@@ -272,14 +272,25 @@ body > * {
   right: 20px;
   width: 400px;
   height: 300px;
-  resize: both;
-  overflow: auto;
+  overflow: hidden;
   border: 2px solid #ccc;
   background: white;
   z-index: 9999;
   box-shadow: 0 8px 20px rgba(0,0,0,.35);
   border-radius: 8px;
 }
+
+/* 專用縮放把手 */
+#voice-resize-handle {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 16px;
+  height: 16px;
+  cursor: se-resize;
+  background: transparent;
+}
+
 
 #voice-header {
   height: 32px;
@@ -298,6 +309,10 @@ body > * {
   height: calc(100% - 32px);
   border: none;
   display: block;
+}
+#voice-container,
+#voice-container * {
+  user-select: none;
 }
 
 .hidden {
