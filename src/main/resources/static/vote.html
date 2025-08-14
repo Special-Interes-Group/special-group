@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>投票階段</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=IM+Fell+English:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/vote.css">
   <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
@@ -13,10 +14,10 @@
     <div id="timer">剩餘時間：<span id="countdown">15</span> 秒</div>
 
     <h1>投票階段</h1>
-
+<div id="paper-board">
     <!-- 出戰玩家卡牌 -->
     <div id="expedition-container" class="expedition"></div>
-
+</div>
     <!-- 票數顯示區 -->
     <div id="vote-result" class="hidden">
       <p>同意票：<span id="agree-count">0</span></p>

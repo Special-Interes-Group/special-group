@@ -28,21 +28,32 @@ async function fetchPlayers() {
   players = await res.json();
 }
 
+// 新增：把原圖檔名轉成 cut 資料夾的路徑
+function getCutoutAvatarPath(originalAvatar) {
+  // originalAvatar 可能是 "headshot5.png" 或 "avatars/headshot5.png"
+  const fileName = originalAvatar.split('/').pop(); // 只取檔名部分
+  return `cut/${fileName}`; // 指向 cut 子資料夾
+}
+
 function renderExpedition(list) {
   expeditionBox.innerHTML = "";
   list.forEach(name => {
     const p = players.find(v => v.name === name);
     if (!p) return;
+
+    const cutoutAvatar = getCutoutAvatarPath(p.avatar); // 取得去背圖路徑
+
     expeditionBox.insertAdjacentHTML("beforeend", `
       <div class="exp-card">
         <div class="avatar-wrapper">
-          <img src="/images/${p.avatar}" alt="${p.name}">
+          <img src="/images/${cutoutAvatar}" alt="${p.name}">
         </div>
         <div class="exp-name">${p.name}</div>
       </div>
     `);
   });
 }
+
 
 function updateUI() {
   agreeCountEl.textContent = agree;

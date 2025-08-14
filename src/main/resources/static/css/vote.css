@@ -1,133 +1,194 @@
-body {
-  margin: 0;
-  padding: 0;
-  font-family: sans-serif;
-  height: 100vh;
-  position: relative;
-  background: url('/images/game-background.png') center/cover no-repeat;
+/* ================= 基本：暗場景 + 柔光 ================= */
+:root{
+  --ink:#171a1d;
+  --paper:#8a6b3a;       /* 羊皮紙主色 */
+  --paper-dark:#4a3a25;  /* 深邊緣/陰影 */
+  --gold:#d8c49b;        /* 柔金色字（降亮度） */
+  --paper-ink:#e5d7b2;   /* 紙上墨色 */
 }
 
-#vote-container {
-  background: transparent;
-  border-radius: 12px;
-  padding: 42px 56px 30px;
-  text-align: center;
+body{
+  margin:0; padding:0;
+  height:100vh;
+  font-family:"IM Fell English","Cinzel",Georgia,serif;
+  color:var(--paper-ink);
+  background:url('/images/test.png') center/cover no-repeat;
+  position:relative;
+}
+/* 舞台聚光，讓中間更亮，四周自然吃暗 */
+body::before{
+  content:""; position:absolute; inset:0;
+  background:
+    radial-gradient(60% 55% at 50% 38%, rgba(0,0,0,0) 0%, rgba(0,0,0,.55) 100%);
+  pointer-events:none;
+  z-index:0;
 }
 
-h1 {
-  margin: 0 0 32px;
-  font-size: 48px;
-  letter-spacing: 2px;
+#vote-container{
+  position:relative; z-index:1;
+  background:transparent;
+  padding:26px 56px 24px;
+  text-align:center;
 }
 
-/* Expedition 卡牌容器 */
-.expedition {
-  display: flex;
-  gap: 24px;
-  justify-content: center;
-  margin: 20px 0 30px;
+/* ===== 標題：柔金浮雕 ===== */
+h1{
+  margin:22px 0 16px; /* 往下移一點 */
+  font-family:"Cinzel","IM Fell English",serif;
+  font-weight:800;
+  font-size:64px;
+  letter-spacing:2px;
+  color:var(--gold);
+  text-shadow:
+    0 1px 0 rgba(0,0,0,.65),
+    0 3px 6px rgba(0,0,0,.35);
 }
 
-.exp-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 220px;
-  background: url("/images/card.png") center/contain no-repeat;
-  background-size: cover;
-  padding: 20px 0;
-  position: relative;
+/* ================= 卡牌 ================= */
+.expedition{
+  display:flex; gap:34px; justify-content:center;
+  margin:6px 0 18px; flex-wrap:wrap;
 }
 
-.avatar-wrapper {
-  position: relative;
-  margin-top: 50px;
-  width: 60%;
-  aspect-ratio: 1/1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+/* — 卡面（原本棕金紙）在投票版面已移除 */
+.exp-card{
+  position:relative;
+  width:260px; aspect-ratio:3/4;
+  display:flex; flex-direction:column; align-items:center;
+  padding:14px 14px 12px;
+  border-radius:12px;
+  background:none;
+  box-shadow:none;
+  outline:none;
 }
 
-.avatar-wrapper img {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  object-fit: cover;
-  transform: translateY(-20px);
-  border: 4px solid black;
+/* 上下破布感的小缺口（移除） */
+.exp-card::after{ display:none; }
+
+/* — 頭貼：柔化、偏紙色、深褐圓框 */
+.avatar-wrapper{
+  position:relative;
+  margin-top:0;
+  width:68%;
+  display:grid; 
+  place-items:center;
+  background:transparent;
+  border-radius:0;
+  overflow:visible;
+  -webkit-mask-image:none;
+          mask-image:none;
+}
+.avatar-wrapper::before,
+.avatar-wrapper::after{ display:none; }
+
+.avatar-wrapper img{
+  width:100%;
+  height:auto;
+  object-fit:contain;
+  border-radius:0;
+
+  /* 顏色融合 + 貼紙陰影合併成一條 */
+  filter:
+    grayscale(0.12)       /* 稍微去彩，避免太鮮豔 */
+    sepia(0.35)           /* 棕色調 */
+    hue-rotate(-10deg)    /* 暖色偏移 */
+    saturate(0.78)        /* 降飽和 */
+    brightness(0.95)      /* 略微變暗 */
+    contrast(0.92)        /* 降對比，減少突兀 */
+    drop-shadow(0 1px 1px rgba(0,0,0,0.35)) /* 淡淡接觸陰影 */
+    drop-shadow(0 4px 8px rgba(0,0,0,0.25));/* 柔和立體陰影 */
+
+  /* 融合模式：讓角色顏色與紙張混合 */
+  mix-blend-mode:multiply;
+
+  opacity:0.96;
+  box-shadow:none;
 }
 
-.exp-name {
-  margin-top: 20px;
-  margin-bottom: 10px;
-  font-size: 20px;
-  font-weight: bold;
-  color: #333;
-  text-align: center;
-  transform: translateY(-20px);
+
+/* — 名稱：紙上墨色 */
+.exp-name{
+  margin-top:8px;
+  margin-bottom:4px;
+  font-size:18px;
+  font-weight:700;
+  letter-spacing:.3px;
+  color:var(--paper-ink);
+  text-shadow:0 1px 0 rgba(0,0,0,.55), 0 2px 6px rgba(0,0,0,.28);
 }
 
-#vote-result p {
-  margin: 8px 0;
-  font-size: 24px;
+/* ================= 投票按鈕（紙質感） ================= */
+#vote-result p{ margin:8px 0; font-size:20px; color:var(--paper-ink); }
+#vote-buttons{
+  margin-top:-14px; /* 往上移一點 */
+  display:flex;
+  justify-content:center;
+  gap:12px;
+}
+#vote-buttons button{
+  padding:10px 24px;
+  font-size:18px;
+  font-weight:600;
+  cursor:pointer;
+  border-radius:10px;
+  border:1px solid rgba(0,0,0,.35);
+  background:var(--paper); /* 紙色 */
+  mix-blend-mode:multiply;
+  filter:brightness(.92) contrast(.95) sepia(.25);
+  color:var(--paper-ink);
+  text-shadow:0 1px 0 rgba(0,0,0,.5);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.06),
+    0 3px 8px rgba(0,0,0,.35);
+  transition:transform .08s ease, filter .18s ease;
+}
+#vote-buttons button:hover{
+  transform:translateY(-1px) scale(1.01);
+  filter:brightness(.97) contrast(.98) sepia(.25);
+}
+#vote-buttons button.selected{
+  outline:2px solid rgba(236,210,140,.45);
 }
 
-#vote-buttons {
-  margin-top: 10px;
+/* 三個按鈕保持一致色系 */
+#agree-btn,
+#reject-btn,
+#confirm-btn{
+  background:var(--paper);
 }
 
-#vote-buttons button {
-  padding: 10px 28px;
-  margin: 0 10px;
-  font-size: 20px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: transform .1s ease;
+/* ================= 右上角計時：小匾額 ================= */
+#timer{
+  position:fixed; top:18px; right:26px; z-index:10;
+  font-family:"IM Fell English",serif; font-size:18px;
+  padding:8px 12px; color:var(--paper-ink);
+  background:rgba(24,21,18,.58);
+  border:1px solid rgba(0,0,0,.5);
+  border-radius:10px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 4px 16px rgba(0,0,0,.45);
 }
 
-#vote-buttons button:hover {
-  transform: scale(1.05);
+.hidden{ display:none; }
+
+/* 紙面熱區（對齊背景圖中間那張大紙） */
+#paper-board{
+  position:relative;
+  margin:clamp(8px, 6vh, 64px) auto 10px;
+  width:min(820px, 70vw);
+  height:clamp(320px, 52vh, 520px);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  pointer-events:auto;
+}
+#paper-board .expedition{
+  margin:0;
+  gap:clamp(20px, 4vw, 48px);
+  flex-wrap:nowrap;
 }
 
-#agree-btn {
-  background: #0ae819;
-  color: #fff;
-}
-
-#reject-btn {
-  background: #f44336;
-  color: #fff;
-}
-
-#confirm-btn {
-  background: #e0e0e0;
-  color: #333;
-}
-
-#vote-buttons button.selected {
-  outline: 3px solid #fff;
-}
-
-#status {
-  margin-top: 28px;
-  font-size: 18px;
-  color: #555;
-}
-
-.hidden {
-  display: none;
-}
-
-#timer {
-  position: fixed;
-  top: 20px;
-  right: 30px;
-  font-size: 22px;
-  color: white;
-  background: rgba(0, 0, 0, 0.5);
-  padding: 6px 12px;
-  border-radius: 8px;
-  z-index: 10;
+/* 小螢幕時允許換行 */
+@media (max-width: 900px){
+  #paper-board{ height:clamp(320px, 58vh, 560px); }
+  #paper-board .expedition{ flex-wrap:wrap; }
 }
