@@ -133,13 +133,20 @@ public class RoomService {
         ));
     }
 
-    public Map<String, Object> castVote(String roomId, String voter, boolean agree) {
+    public Map<String, Object> castVote(String roomId, String voter, Boolean agreeNullable, boolean abstain) {
         Room room = getRoomById(roomId);
-        room.getVoteMap().put(voter, agree);
+
+        // 以 null 表示棄票
+        Boolean valueToStore = abstain ? null : agreeNullable;
+        room.getVoteMap().put(voter, valueToStore);
         roomRepo.save(room);
 
-        long agreeCnt = room.getVoteMap().values().stream().filter(b -> b).count();
-        long rejectCnt = room.getVoteMap().size() - agreeCnt;
+        // 正確計數：只算 true / false，不把 null 算進去
+        long agreeCnt  = room.getVoteMap().values().stream()
+                .filter(Boolean.TRUE::equals).count();
+        long rejectCnt = room.getVoteMap().values().stream()
+                .filter(Boolean.FALSE::equals).count();
+
         boolean finished = room.getVoteMap().size() == room.getPlayers().size();
 
         Map<String, Object> payload = Map.of(
@@ -149,22 +156,18 @@ public class RoomService {
                 "expedition", room.getCurrentExpedition()
         );
 
-        // ✅ 廣播投票結果
         ws.convertAndSend("/topic/vote/" + roomId, payload);
 
-        // ✅ 若投票完成 → 輪替領袖 + 廣播
         if (finished) {
+            String result = (agreeCnt > rejectCnt) ? "votePassed" : "voteFailed";
+            ws.convertAndSend("/topic/vote/" + roomId, result);
+
             int nextIndex = (room.getCurrentLeaderIndex() + 1) % room.getPlayers().size();
             room.setCurrentLeaderIndex(nextIndex);
             String nextLeader = room.getPlayers().get(nextIndex);
             room.setLeader(nextLeader);
-            
-            String result = (agreeCnt > rejectCnt) ? "votePassed" : "voteFailed";
-            ws.convertAndSend("/topic/vote/" + roomId, result);
-            // ✅ 廣播新領袖
             ws.convertAndSend("/topic/leader/" + roomId, nextLeader);
 
-            // ✅ 儲存更新
             roomRepo.save(room);
         }
 
@@ -173,8 +176,15 @@ public class RoomService {
 
     public Map<String, Object> getVoteState(String roomId, String requester) {
         Room room = getRoomById(roomId);
-        long agreeCnt = room.getVoteMap().values().stream().filter(Boolean::booleanValue).count();
-        long rejectCnt = room.getVoteMap().size() - agreeCnt;
+
+        long agreeCnt = room.getVoteMap().values().stream()
+                .filter(Boolean.TRUE::equals).count();
+        long rejectCnt = room.getVoteMap().values().stream()
+                .filter(Boolean.FALSE::equals).count();
+        // 若要顯示用，可順手算棄票數（非必要）
+        // long abstainCnt = room.getVoteMap().values().stream()
+        //         .filter(v -> v == null).count();
+
         boolean hasVoted = room.getVoteMap().containsKey(requester);
         boolean canVote = !hasVoted;
 
@@ -188,35 +198,47 @@ public class RoomService {
         );
     }
 
+
     /* ==================== 任務卡提交處理 ==================== */
     public void submitMissionCard(String roomId, String player, String result) {
-    Room room = getRoomById(roomId);
-    room.getSubmittedMissionCards().put(player, result);
-    roomRepo.save(room);
+        Room room = getRoomById(roomId);
 
-    if (room.getSubmittedMissionCards().size() == room.getCurrentExpedition().size()) {
-        int success = 0, fail = 0;
-        Map<String, String> submitted = room.getSubmittedMissionCards();
-
-        for (String r : submitted.values()) {
-            if ("SUCCESS".equals(r)) success++;
-            else if ("FAIL".equals(r)) fail++;
+        // ✅ 只允許「本回合出戰名單」中的人提交
+        List<String> expedition = room.getCurrentExpedition();
+        if (expedition == null || !expedition.contains(player)) {
+            throw new IllegalStateException("Player is not on expedition this round");
         }
 
-        int round = room.getCurrentRound();
-        MissionRecord record = new MissionRecord(success, fail);
+        // ✅ 僅允許 SUCCESS 或 FAIL（大小寫固定）
+        String normalized = Objects.requireNonNull(result, "result is required").toUpperCase(Locale.ROOT);
+        if (!normalized.equals("SUCCESS") && !normalized.equals("FAIL")) {
+            throw new IllegalArgumentException("result must be SUCCESS or FAIL");
+        }
 
-        // ✅ 新增：記錄每位玩家交了什麼卡
-        record.setCardMap(new HashMap<>(submitted));
-
-        room.getMissionResults().put(round, record);
-        room.getSubmittedMissionCards().clear();
+        room.getSubmittedMissionCards().put(player, normalized);
         roomRepo.save(room);
 
-        ws.convertAndSend("/topic/room/" + roomId, "allMissionCardsSubmitted");
-    }
-}
+        // 結算：所有「出戰成員」都交了卡才進入計算
+        if (room.getSubmittedMissionCards().size() == expedition.size()) {
+            int success = 0, fail = 0;
+            Map<String, String> submitted = room.getSubmittedMissionCards();
 
+            for (String r : submitted.values()) {
+                if ("SUCCESS".equals(r)) success++;
+                else if ("FAIL".equals(r)) fail++;
+            }
+
+            int round = room.getCurrentRound();
+            MissionRecord record = new MissionRecord(success, fail);
+            record.setCardMap(new HashMap<>(submitted)); // 保留誰出什麼
+
+            room.getMissionResults().put(round, record);
+            room.getSubmittedMissionCards().clear();
+            roomRepo.save(room);
+
+            ws.convertAndSend("/topic/room/" + roomId, "allMissionCardsSubmitted");
+        }
+    }
 
     public List<String> generateSkillOrder(Room room) {
     // 技能觸發順序固定

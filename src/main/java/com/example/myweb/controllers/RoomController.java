@@ -396,16 +396,28 @@ public class RoomController {
 
     /** 玩家投票 */
     @PostMapping("/room/{roomId}/vote")
-    public ResponseEntity<Map<String,Object>> vote(
+    public ResponseEntity<Map<String, Object>> vote(
             @PathVariable String roomId,
-            @RequestBody Map<String,Object> body) {
+            @RequestBody Map<String, Object> body) {
 
         String voter = (String) body.get("voter");
-        boolean agree = (Boolean) body.get("agree");
 
-            Map<String,Object> result = roomService.castVote(roomId, voter, agree); // 🔥 修正
-            return ResponseEntity.ok(result);
+        // agree 允許為 null（未提供或送棄票時）
+        Boolean agreeNullable = (body.containsKey("agree")) ? (Boolean) body.get("agree") : null;
+
+        // 明確支援棄票旗標
+        boolean abstain = false;
+        if (body.containsKey("abstain")) {
+            Object a = body.get("abstain");
+            if (a instanceof Boolean) {
+                abstain = (Boolean) a;
+            }
+        }
+
+        Map<String, Object> result = roomService.castVote(roomId, voter, agreeNullable, abstain);
+        return ResponseEntity.ok(result);
     }
+
 
 
     /** 取得目前票數與自身能否投票 */
@@ -446,6 +458,26 @@ public class RoomController {
         result.put("reject", reject);
         return ResponseEntity.ok(result);
     }
+    // RoomController.java
+    @GetMapping("/room/{roomId}/mission-state")
+    public ResponseEntity<Map<String,Object>> getMissionState(
+            @PathVariable String roomId,
+            @RequestParam String player) {
+        Room room = roomService.getRoomById(roomId);
+        List<String> expedition = room.getCurrentExpedition();
+        boolean inExpedition = expedition != null && expedition.contains(player);
+
+        Map<String, String> submitted = room.getSubmittedMissionCards(); // 可能為空
+        String myCard = (submitted != null) ? submitted.get(player) : null; // SUCCESS / FAIL / null
+
+        Map<String,Object> resp = new HashMap<>();
+        resp.put("expedition", expedition);
+        resp.put("inExpedition", inExpedition);
+        resp.put("myCard", myCard);
+        resp.put("round", room.getCurrentRound());
+        return ResponseEntity.ok(resp);
+}
+
     @PostMapping("/room/{roomId}/mission-result")
     public ResponseEntity<Void> submitMissionCard(
             @PathVariable String roomId,
