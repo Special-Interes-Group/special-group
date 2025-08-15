@@ -13,23 +13,27 @@
     <!-- ✅ 右上角計時器 -->
     <div id="timer">剩餘時間：<span id="countdown">15</span> 秒</div>
 
-    <h1>投票階段</h1>
-<div id="paper-board">
-    <!-- 出戰玩家卡牌 -->
-    <div id="expedition-container" class="expedition"></div>
-</div>
     <!-- 票數顯示區 -->
     <div id="vote-result" class="hidden">
       <p>同意票：<span id="agree-count">0</span></p>
       <p>反對票：<span id="reject-count">0</span></p>
     </div>
 
-    <!-- 投票按鈕 -->
-    <div id="vote-buttons" class="hidden">
-      <button id="agree-btn">同意</button>
-      <button id="reject-btn">反對</button>
-      <button id="confirm-btn">確認</button>
-    </div>
+<div id="paper-board">
+  <!-- 標題放到紙面上 -->
+  <h1 id="board-title">投票階段</h1>
+
+  <!-- 頭貼區（2 人版本） -->
+  <div id="expedition-container" class="expedition"></div>
+
+  <!-- 按鈕移進紙面上定位 -->
+  <div id="vote-buttons" class="hidden">
+    <button id="agree-btn">同意</button>
+    <button id="reject-btn">反對</button>
+    <button id="confirm-btn">確認</button>
+  </div>
+</div>
+
 
     <!-- 狀態文字 -->
     <p id="status"></p>

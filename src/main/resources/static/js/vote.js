@@ -50,6 +50,18 @@ function getCutoutAvatarPath(originalAvatar) {
   return `cut/${fileName}`;
 }
 
+// 依人數設定紙面板版型（配合 CSS）
+function applyExpeditionLayoutByCount() {
+  const board = document.getElementById('paper-board');
+  if (!board) return;
+  board.classList.remove('count-2', 'count-3', 'count-4', 'count-5');
+  const n = expeditionBox.querySelectorAll('.exp-card').length;
+  if (n === 2) board.classList.add('count-2');
+  if (n === 3) board.classList.add('count-3');
+  if (n === 4) board.classList.add('count-4');
+  if (n === 5) board.classList.add('count-5');
+}
+
 function renderExpedition(list) {
   expeditionBox.innerHTML = "";
   list.forEach(name => {
@@ -65,6 +77,9 @@ function renderExpedition(list) {
       </div>
     `);
   });
+
+  // ★ 依人數套用對應版型（count-2 / count-3 / ...）
+  applyExpeditionLayoutByCount();
 }
 
 function updateUICounts(a, r) {
@@ -249,33 +264,32 @@ function startCountdown(seconds = 15) {
 }
 
 // 等待伺服器可用的結果（避免用本地舊值做決策）
-// 最多等待 10 秒，800ms 一次；若超時，最後一次成功值或顯示提示
+// 最多等待 4 秒，300ms 一次；若超時，最後一次成功值或顯示提示
 async function waitForCanonicalResult(timeoutMs = 4000, intervalMs = 300) {
-    const deadline = Date.now() + timeoutMs;
-    let lastSnap = null;
+  const deadline = Date.now() + timeoutMs;
+  let lastSnap = null;
 
-    while (Date.now() < deadline && !didNavigate) {
-        try {
-            const snap = await getServerResult();
-            lastSnap = snap;
-            const haveAll = (typeof snap.closed === "boolean") ||
-                            (typeof snap.passed === "boolean") ||
-                            (snap.abstain != null && snap.totalEligible != null);
-            if (haveAll) {
-                showResultAndNavigateFromSnapshot(snap);
-                return;
-            }
-        } catch {}
-        await new Promise(r => setTimeout(r, intervalMs)); // ← 改成 300ms
-    }
+  while (Date.now() < deadline && !didNavigate) {
+    try {
+      const snap = await getServerResult();
+      lastSnap = snap;
+      const haveAll = (typeof snap.closed === "boolean") ||
+                      (typeof snap.passed === "boolean") ||
+                      (snap.abstain != null && snap.totalEligible != null);
+      if (haveAll) {
+        showResultAndNavigateFromSnapshot(snap);
+        return;
+      }
+    } catch {}
+    await new Promise(r => setTimeout(r, intervalMs));
+  }
 
-    if (lastSnap) {
-        showResultAndNavigateFromSnapshot(lastSnap);
-    } else {
-        statusEl.textContent = "投票已截止，等待伺服器結算...";
-    }
+  if (lastSnap) {
+    showResultAndNavigateFromSnapshot(lastSnap);
+  } else {
+    statusEl.textContent = "投票已截止，等待伺服器結算...";
+  }
 }
-
 
 // -------------------- 初始化與 WebSocket --------------------
 async function init() {
@@ -353,3 +367,37 @@ document.addEventListener("DOMContentLoaded", () => {
   init();
   connectWebSocket();
 });
+
+// === 依 background-size: cover 計算紙面矩形在視窗中的實際座標 ===
+const BG_NATURAL = { w: 1536, h: 1024 };           // /images/test.png 原圖尺寸
+const PAPER_RECT = { x: 480, y: 128, w: 574, h: 576 }; // 中央大紙在原圖中的位置
+
+function layoutPaperBoard() {
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+
+  // cover 規則：用較大縮放讓圖片鋪滿視窗
+  const scale = Math.max(vw / BG_NATURAL.w, vh / BG_NATURAL.h);
+  const drawW = BG_NATURAL.w * scale;
+  const drawH = BG_NATURAL.h * scale;
+
+  // 置中後產生的偏移（可能會左右或上下溢出被裁）
+  const offsetX = (vw - drawW) / 2;
+  const offsetY = (vh - drawH) / 2;
+
+  // 把原圖座標映射到螢幕像素
+  const left   = Math.round(offsetX + PAPER_RECT.x * scale);
+  const top    = Math.round(offsetY + PAPER_RECT.y * scale);
+  const width  = Math.round(PAPER_RECT.w * scale);
+  const height = Math.round(PAPER_RECT.h * scale);
+
+  const board = document.getElementById('paper-board');
+  if (!board) return;
+  board.style.left = left + 'px';
+  board.style.top = top + 'px';
+  board.style.width = width + 'px';
+  board.style.height = height + 'px';
+}
+
+window.addEventListener('resize', layoutPaperBoard);
+document.addEventListener('DOMContentLoaded', layoutPaperBoard);

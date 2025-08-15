@@ -33,7 +33,7 @@ body::before{
 
 /* ===== 標題：柔金浮雕 ===== */
 h1{
-  margin:22px 0 16px; /* 往下移一點 */
+  margin:22px 0 16px;
   font-family:"Cinzel","IM Fell English",serif;
   font-weight:800;
   font-size:64px;
@@ -46,11 +46,12 @@ h1{
 
 /* ================= 卡牌 ================= */
 .expedition{
-  display:flex; gap:34px; justify-content:center;
-  margin:6px 0 18px; flex-wrap:wrap;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 34px;
 }
 
-/* — 卡面（原本棕金紙）在投票版面已移除 */
 .exp-card{
   position:relative;
   width:260px; aspect-ratio:3/4;
@@ -61,11 +62,8 @@ h1{
   box-shadow:none;
   outline:none;
 }
-
-/* 上下破布感的小缺口（移除） */
 .exp-card::after{ display:none; }
 
-/* — 頭貼：柔化、偏紙色、深褐圓框 */
 .avatar-wrapper{
   position:relative;
   margin-top:0;
@@ -86,27 +84,20 @@ h1{
   height:auto;
   object-fit:contain;
   border-radius:0;
-
-  /* 顏色融合 + 貼紙陰影合併成一條 */
   filter:
-    grayscale(0.12)       /* 稍微去彩，避免太鮮豔 */
-    sepia(0.35)           /* 棕色調 */
-    hue-rotate(-10deg)    /* 暖色偏移 */
-    saturate(0.78)        /* 降飽和 */
-    brightness(0.95)      /* 略微變暗 */
-    contrast(0.92)        /* 降對比，減少突兀 */
-    drop-shadow(0 1px 1px rgba(0,0,0,0.35)) /* 淡淡接觸陰影 */
-    drop-shadow(0 4px 8px rgba(0,0,0,0.25));/* 柔和立體陰影 */
-
-  /* 融合模式：讓角色顏色與紙張混合 */
+    grayscale(0.12)
+    sepia(0.35)
+    hue-rotate(-10deg)
+    saturate(0.78)
+    brightness(0.95)
+    contrast(0.92)
+    drop-shadow(0 1px 1px rgba(0,0,0,0.35))
+    drop-shadow(0 4px 8px rgba(0,0,0,0.25));
   mix-blend-mode:multiply;
-
   opacity:0.96;
   box-shadow:none;
 }
 
-
-/* — 名稱：紙上墨色 */
 .exp-name{
   margin-top:8px;
   margin-bottom:4px;
@@ -117,10 +108,10 @@ h1{
   text-shadow:0 1px 0 rgba(0,0,0,.55), 0 2px 6px rgba(0,0,0,.28);
 }
 
-/* ================= 投票按鈕（紙質感） ================= */
+/* ================= 投票按鈕 ================= */
 #vote-result p{ margin:8px 0; font-size:20px; color:var(--paper-ink); }
 #vote-buttons{
-  margin-top:-14px; /* 往上移一點 */
+  margin-top:-14px;
   display:flex;
   justify-content:center;
   gap:12px;
@@ -132,7 +123,7 @@ h1{
   cursor:pointer;
   border-radius:10px;
   border:1px solid rgba(0,0,0,.35);
-  background:var(--paper); /* 紙色 */
+  background:var(--paper);
   mix-blend-mode:multiply;
   filter:brightness(.92) contrast(.95) sepia(.25);
   color:var(--paper-ink);
@@ -149,15 +140,11 @@ h1{
 #vote-buttons button.selected{
   outline:2px solid rgba(236,210,140,.45);
 }
-
-/* 三個按鈕保持一致色系 */
-#agree-btn,
-#reject-btn,
-#confirm-btn{
+#agree-btn, #reject-btn, #confirm-btn{
   background:var(--paper);
 }
 
-/* ================= 右上角計時：小匾額 ================= */
+/* ================= 右上角計時 ================= */
 #timer{
   position:fixed; top:18px; right:26px; z-index:10;
   font-family:"IM Fell English",serif; font-size:18px;
@@ -170,25 +157,70 @@ h1{
 
 .hidden{ display:none; }
 
-/* 紙面熱區（對齊背景圖中間那張大紙） */
+/* 紙面熱區 */
 #paper-board{
-  position:relative;
-  margin:clamp(8px, 6vh, 64px) auto 10px;
-  width:min(820px, 70vw);
-  height:clamp(320px, 52vh, 520px);
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  pointer-events:auto;
+  position: fixed !important;
+  margin: 0 !important;
+  left: 0; top: 0; width: 0; height: 0;
+  z-index: 2;
 }
-#paper-board .expedition{
-  margin:0;
-  gap:clamp(20px, 4vw, 48px);
-  flex-wrap:nowrap;
+#board-title{
+  position: absolute;
+  left: 20.732%;
+  top:  7.118%;
+  width: 58.885%;
+  height: 21.181%;
+  margin: 0;
+  display: grid;
+  place-items: center;
 }
 
-/* 小螢幕時允許換行 */
-@media (max-width: 900px){
-  #paper-board{ height:clamp(320px, 58vh, 560px); }
-  #paper-board .expedition{ flex-wrap:wrap; }
+/* 頭貼容器絕對定位 */
+#expedition-container{
+  position: absolute;
 }
+
+/* 2、3、4 人版統一成單排置中 */
+#paper-board.count-2 #expedition-container,
+#paper-board.count-3 #expedition-container,
+#paper-board.count-4 #expedition-container{
+  left: 12%;
+  top:  52%;
+  width: 76%;
+  height: 28%;
+}
+#paper-board.count-2 .expedition{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+#paper-board.count-3 .expedition{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
+#paper-board.count-4 .expedition{ grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+#paper-board.count-2 .exp-card,
+#paper-board.count-3 .exp-card,
+#paper-board.count-4 .exp-card{
+  width: clamp(150px, 14vw, 220px);
+}
+
+/* 5 人版單排 */
+#paper-board.count-5 #expedition-container{
+  left: 8%;
+  top:  52%;
+  width: 84%;
+  height: 28%;
+}
+#paper-board.count-5 .expedition{
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: clamp(12px, 2.4vw, 28px);
+}
+#paper-board.count-5 .exp-card{ width: clamp(130px, 11.5vw, 200px); }
+
+/* 按鈕位置 */
+#vote-buttons{
+  position: absolute;
+  left: 12.021%;
+  top: 90%;
+  width: 75.436%;
+  height: 5.035%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+#vote-buttons button{ flex: 0 0 28%; }
