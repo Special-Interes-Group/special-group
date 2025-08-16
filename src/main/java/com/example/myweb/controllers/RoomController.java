@@ -365,7 +365,7 @@ public class RoomController {
             .orElse(ResponseEntity.notFound().build());
     }
 
-    /* -------------------- 指派角色 + 隨機領袖 -------------------- */
+    /* -------------------- 指派角色 + 領袖 -------------------- */
 
 
     @PostMapping("/room/{roomId}/assign-roles")
@@ -389,13 +389,15 @@ public class RoomController {
             @PathVariable String roomId,
             @RequestBody Map<String,Object> body) {
 
-        @SuppressWarnings("unchecked")             // 🔥 修正：消除未檢查 cast 警告
+        @SuppressWarnings("unchecked")
         List<String> expedition = (List<String>) body.get("expedition");
-        String leader = (String) body.get("leader");
 
-        roomService.startVote(roomId, expedition, leader);   // 🔥 修正：改用 roomService
+        // ✅ 不再傳 leader，避免覆寫
+        roomService.startVote(roomId, expedition);
         return ResponseEntity.ok().build();
     }
+
+
 
     /** 玩家投票 */
     @PostMapping("/room/{roomId}/vote")
@@ -419,6 +421,17 @@ public class RoomController {
 
         Map<String, Object> result = roomService.castVote(roomId, voter, agreeNullable, abstain);
         return ResponseEntity.ok(result);
+    }
+
+    /** 時間到：未投者一律視為棄票 → 結算 & 輪替 */
+    @PostMapping("/room/{roomId}/vote-timeup")
+    public ResponseEntity<?> voteTimeUp(@PathVariable String roomId) {
+        try {
+            roomService.timeUpFinalize(roomId);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
 
 

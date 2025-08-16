@@ -290,5 +290,6 @@ public class Room {
 
     public void setLeader(String leader) {
         this.leader = leader;
-}
+    }
+    
 }

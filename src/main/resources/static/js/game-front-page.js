@@ -173,7 +173,7 @@ async function confirmSelection(){
     await fetch(`/api/room/${roomId}/start-vote`, {
       method: "POST",
       headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({ leader: playerName, expedition: selectedOrder })
+      body: JSON.stringify({ expedition: selectedOrder })
     });
     closeSelectModal();
     window.location.href = `/vote.html?roomId=${roomId}`;

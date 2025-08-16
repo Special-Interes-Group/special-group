@@ -115,37 +115,72 @@ public class RoomService {
 
     /* ==================== 投票流程 ==================== */
 
-    public void startVote(String roomId, List<String> expedition, String leader) {
+    // 替換舊的 startVote(...)：移除 leader 參數 & 不再 setLeader
+    public void startVote(String roomId, List<String> expedition) {
         Room room = getRoomById(roomId);
-        room.setCurrentExpedition(expedition);
-        room.setVoteMap(new HashMap<>());
 
-        // ✅ 修正這裡：使用參數 leader，而非不存在的 leaderName
-        room.setLeader(leader);
+        room.setCurrentExpedition(
+            expedition != null ? new ArrayList<>(expedition) : new ArrayList<>()
+        );
+        room.setVoteMap(new HashMap<>()); // 清票
+        // ❌ 不要動 leader，輪替發生在結算時
 
         roomRepo.save(room);
 
+        // 廣播「開始投票」，讓所有人一併跳頁
+        ws.convertAndSend("/topic/room/" + roomId, "startVote");
+
+        // （保留）投票中的即時統計初始化
         ws.convertAndSend("/topic/vote/" + roomId, Map.of(
-                "agree", 0,
-                "reject", 0,
-                "finished", false,
-                "expedition", expedition
+            "agree", 0,
+            "reject", 0,
+            "finished", false,
+            "expedition", room.getCurrentExpedition()
         ));
+    }
+
+    // 新增：統一結算 + 廣播 + 輪替 + save（冪等：只要滿員就可呼叫）
+    private void closeVoteAndRotate(Room room, String roomId) {
+        Map<String, Boolean> voteMap = room.getVoteMap();
+        if (voteMap == null) voteMap = new HashMap<>();
+
+        int total = room.getPlayers().size();
+        int agree = 0, reject = 0;
+        for (Boolean v : voteMap.values()) {
+            if (v == null) continue;        // null = 棄票
+            if (v) agree++; else reject++;
+        }
+        int abstain = Math.max(0, total - (agree + reject));
+        int effective = Math.max(0, total - abstain);
+        int threshold = (int) Math.ceil(effective / 2.0);
+
+        boolean passed = agree >= threshold;
+
+        // 廣播最終結果
+        ws.convertAndSend("/topic/vote/" + roomId, passed ? "votePassed" : "voteFailed");
+
+        // ✅ 在「回合結束」時輪替
+        int nextIndex = (room.getCurrentLeaderIndex() + 1) % total;
+        room.setCurrentLeaderIndex(nextIndex);
+        String nextLeader = room.getPlayers().get(nextIndex);
+        room.setLeader(nextLeader);
+
+        roomRepo.save(room);
+
+        // （可選）讓房間頁即時刷新領袖
+        ws.convertAndSend("/topic/leader/" + roomId, nextLeader);
+        ws.convertAndSend("/topic/room/" + roomId, "leaderChanged");
     }
 
     public Map<String, Object> castVote(String roomId, String voter, Boolean agreeNullable, boolean abstain) {
         Room room = getRoomById(roomId);
 
-        // 以 null 表示棄票
-        Boolean valueToStore = abstain ? null : agreeNullable;
-        room.getVoteMap().put(voter, valueToStore);
+        // 存一票（null 代表棄票）
+        room.getVoteMap().put(voter, abstain ? null : agreeNullable);
         roomRepo.save(room);
 
-        // 正確計數：只算 true / false，不把 null 算進去
-        long agreeCnt  = room.getVoteMap().values().stream()
-                .filter(Boolean.TRUE::equals).count();
-        long rejectCnt = room.getVoteMap().values().stream()
-                .filter(Boolean.FALSE::equals).count();
+        long agreeCnt  = room.getVoteMap().values().stream().filter(Boolean.TRUE::equals).count();
+        long rejectCnt = room.getVoteMap().values().stream().filter(Boolean.FALSE::equals).count();
 
         boolean finished = room.getVoteMap().size() == room.getPlayers().size();
 
@@ -155,24 +190,32 @@ public class RoomService {
                 "finished", finished,
                 "expedition", room.getCurrentExpedition()
         );
-
         ws.convertAndSend("/topic/vote/" + roomId, payload);
 
+        // ✅ 全員皆有紀錄（含棄票）→ 立刻結算與輪替
         if (finished) {
-            String result = (agreeCnt > rejectCnt) ? "votePassed" : "voteFailed";
-            ws.convertAndSend("/topic/vote/" + roomId, result);
-
-            int nextIndex = (room.getCurrentLeaderIndex() + 1) % room.getPlayers().size();
-            room.setCurrentLeaderIndex(nextIndex);
-            String nextLeader = room.getPlayers().get(nextIndex);
-            room.setLeader(nextLeader);
-            ws.convertAndSend("/topic/leader/" + roomId, nextLeader);
-
-            roomRepo.save(room);
+            closeVoteAndRotate(room, roomId);
         }
-
         return payload;
     }
+
+    public void timeUpFinalize(String roomId) {
+        Room room = getRoomById(roomId);
+        Map<String, Boolean> voteMap = room.getVoteMap();
+        if (voteMap == null) {
+            voteMap = new HashMap<>();
+            room.setVoteMap(voteMap);
+        }
+        // 將所有未投者補為棄票（null）
+        for (String p : room.getPlayers()) {
+            voteMap.putIfAbsent(p, null);
+        }
+        roomRepo.save(room);
+
+        // 收尾（與 castVote 完成時一致）
+        closeVoteAndRotate(room, roomId);
+    }
+
 
     public Map<String, Object> getVoteState(String roomId, String requester) {
         Room room = getRoomById(roomId);
