@@ -193,6 +193,7 @@ lurkerBtn.addEventListener("click", async () => {
     if (res.ok) {
       lurkerStatus.textContent = "✅ 技能使用成功，該玩家卡片屬性已反轉";
       lurkerBtn.disabled = true;
+      lurkerSelect.disabled = true;
     } else {
       const errMsg = await res.text();
       lurkerStatus.textContent = "❌ 使用失敗：" + errMsg;
@@ -302,6 +303,7 @@ saboteurBtn.addEventListener("click", async () => {
       const data = await res.json();
       saboteurStatus.textContent = `🧨 已使 ${selected} 的卡片 (${data.removed}) 失效！剩餘次數 ${data.remaining}`;
       saboteurBtn.disabled = true;
+      saboteurSelect.disabled = true;
     } else {
       const errMsg = await res.text();
       saboteurStatus.textContent = "❌ 破壞失敗：" + errMsg;

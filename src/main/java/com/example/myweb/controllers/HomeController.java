@@ -99,6 +99,10 @@ public class HomeController {
     public String vote() {
         return "vote";
     }
+    @GetMapping("/game-records")
+    public String gameRecordsPage() {
+        return "redirect:/game-records.html";
+    }
 
 
 

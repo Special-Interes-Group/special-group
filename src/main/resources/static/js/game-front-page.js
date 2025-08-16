@@ -212,7 +212,7 @@ async function fetchAssignedRoles(){
   }
 }
 
-function connectWebSocket(){
+function connectWebSocket() {
   if (!window.stompClient) {
     const socket = new SockJS('/ws');
     window.stompClient = Stomp.over(socket);
@@ -222,19 +222,40 @@ function connectWebSocket(){
 
   stompClient.connect({}, () => {
     stompClient.subscribe(`/topic/room/${roomId}`, async msg => {
-      const body = msg.body.trim();
-      if (body === "allSkillUsed") {
+      let payload;
+      try {
+        payload = JSON.parse(msg.body); // 嘗試解析成 JSON
+      } catch {
+        payload = msg.body.trim(); // 如果不是 JSON，就當純文字處理
+      }
+
+      if (payload === "allSkillUsed") {
         await fetchAssignedRoles();
         await fetchMissionSummary();
       }
-      if (body === "startRealGame") {
+
+      if (payload === "startRealGame") {
         await fetchAssignedRoles();
         window.location.href = `/game-front-page.html?roomId=${roomId}`;
       }
+
+      // ✅ 遊戲結束廣播，帶結果與卡數跳轉
+      if (typeof payload === "object" && payload.type === "GAME_END") {
+        const params = new URLSearchParams({
+          roomId,
+          result: payload.result,
+          success: payload.success,
+          fail: payload.fail
+        });
+        window.location.href = `/game-end.html?${params.toString()}`;
+      }
     });
+
     stompClient.subscribe(`/topic/leader/${roomId}`, msg => {
-      leaderId = msg.body; renderPlayers(players);
+      leaderId = msg.body;
+      renderPlayers(players);
     });
+
     stompClient.subscribe(`/topic/vote/${roomId}`, () => {
       if (!location.pathname.startsWith("/vote")) {
         window.location.href = `/vote.html?roomId=${roomId}`;
@@ -242,6 +263,7 @@ function connectWebSocket(){
     });
   });
 }
+
 
 function showRoundResult(success, fail) {
   const resultText = `本回合結果：成功 ${success} 張，失敗 ${fail} 張`;

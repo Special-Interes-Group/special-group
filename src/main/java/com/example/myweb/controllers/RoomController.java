@@ -56,6 +56,9 @@ import com.example.myweb.models.Room;
 import com.example.myweb.models.Room.RoleInfo;
 import com.example.myweb.repositories.RoomRepository;
 import com.example.myweb.service.RoomService;
+import com.example.myweb.models.GameRecord;
+import com.example.myweb.repositories.GameRecordRepository;
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api")
@@ -840,6 +843,87 @@ public class RoomController {
 
         return ResponseEntity.ok(Map.of("disabledTarget", targetName, "remaining", 2 - used));
     }
+
+    private final GameRecordRepository gameRecordRepository;
+
+    public RoomController(RoomRepository roomRepo,
+                        GameRecordRepository gameRecordRepository /* 其他依賴 */) {
+        this.roomRepository = roomRepo;
+        this.gameRecordRepository = gameRecordRepository;
+        // 其他原本的初始化
+    }
+    @GetMapping("/room/{roomId}/record")
+    public ResponseEntity<?> getGameRecordByRoomId(@PathVariable String roomId) {
+        GameRecord record = gameRecordRepository.findByRoomId(roomId)
+                .orElse(null);
+        if (record == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(record);
+    }
+
+    @PostMapping("/room/{roomId}/end-game")
+    public ResponseEntity<?> endGame(@PathVariable String roomId,
+                                    @RequestParam String result) {
+        Room room = roomRepository.findById(roomId).orElse(null);
+        if (room == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // 好人陣營角色清單
+        Set<String> goodRoles = Set.of(
+            "普通倖存者",
+            "工程師",
+            "指揮官",
+            "醫護兵"
+            // 其他好人角色
+        );
+
+        Map<String, String> playerResults = new HashMap<>();
+        Map<String, RoleInfo> roles = room.getAssignedRoles();
+
+        // 判斷勝負
+        boolean gameGoodWin = result.contains("正方") || result.contains("好人");
+        for (String player : room.getPlayers()) {
+            String roleName = roles.get(player).getName();
+            boolean isGood = goodRoles.contains(roleName);
+            if ((isGood && gameGoodWin) || (!isGood && !gameGoodWin)) {
+                playerResults.put(player, "勝利");
+            } else {
+                playerResults.put(player, "落敗");
+            }
+        }
+
+        // 建立遊戲紀錄
+        GameRecord record = new GameRecord();
+        record.setRoomId(roomId);
+        record.setPlayDate(LocalDateTime.now());
+        record.setPlayerCount(room.getPlayers().size());
+        record.setResult(result);
+        record.setPlayers(room.getPlayers());
+        record.setPlayerResults(playerResults);
+        gameRecordRepository.save(record);
+
+        // ✅ 新增：廣播遊戲結束資料（包含卡數）
+        simpMessagingTemplate.convertAndSend(
+            "/topic/room/" + roomId,
+            Map.of(
+                "type", "GAME_END",
+                "result", result,
+                "success", room.getSuccessCount(),
+                "fail", room.getFailCount()
+            )
+        );
+
+        // 刪除房間
+        roomRepository.deleteById(roomId);
+
+        return ResponseEntity.ok(Map.of(
+            "message", "遊戲結束，紀錄已保存並刪除房間",
+            "recordId", record.getId()
+        ));
+    }
+
 
 
 

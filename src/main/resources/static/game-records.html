@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <title>遊戲紀錄</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <h1>遊戲紀錄</h1>
+
+  <!-- 玩家統計 -->
+  <div id="player-stats" style="margin-bottom: 10px;">
+    場數：<span id="total-games">0</span> ｜ 勝率：<span id="win-rate">0%</span>
+  </div>
+  <div style="margin-bottom: 10px;">
+    篩選：
+    <select id="filter-select">
+        <option value="all">全部</option>
+        <option value="勝利">勝利</option>
+        <option value="落敗">落敗</option>
+    </select>
+  </div> 
+
+  <!-- 戰績列表 -->
+  <table border="1" cellpadding="5">
+    <thead>
+      <tr>
+        <th>日期</th>
+        <th>玩家數</th>
+        <th>遊戲結果</th>
+        <th>我的結果</th>
+      </tr>
+    </thead>
+    <tbody id="records-list">
+      <tr><td colspan="4">載入中...</td></tr>
+    </tbody>
+  </table>
+  <button onclick="window.location.href='/game-lobby'" style="margin-bottom: 10px;">
+    返回 Game Lobby
+  </button>
+
+  <script src="/js/game-records.js"></script>
+</body>
+</html>
