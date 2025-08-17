@@ -44,7 +44,7 @@ body::before {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: url('/images/introduction.png') no-repeat center center;
+    background: url('/images/basic.jpg') no-repeat center center;
     background-size: 80% auto;
     position: relative;
 }

@@ -110,12 +110,28 @@ function renderPlayers(arr){
       <div class="name">${p.name}</div>
       ${isSelf && p.role ? `<div class="role-label">角色：${p.role}</div>` : ""}
     `;
+    if (isSelf && p.role) {
+  card.dataset.role = normalizeRoleKey(p.role);
+}
     container.appendChild(card);
   });
 
   document.getElementById("leader-action")?.classList.toggle("hidden", leaderId !== playerName);
 }
-
+function normalizeRoleKey(name) {
+  const map = {
+    '工程師':  'engineer',
+    '醫護兵':  'medic',
+    '破壞者':  'saboteur',
+    '影武者':  'shadow',
+    '潛伏者':  'lurker',
+    '指揮官':  'commander',
+    '普通倖存者': 'civilian-good', // ← 好平民（後端字串）
+    '邪惡平民':   'civilian-bad',  // ← 壞平民（後端字串）
+    '平民':      'civilian'        // 備用：如果哪裡仍傳「平民」
+  };
+  return map[name] || String(name).toLowerCase();
+}
 function openSelectModal(){
   const maxPick   = getMaxPick(currentRound, players.length);
   const candidates = players;

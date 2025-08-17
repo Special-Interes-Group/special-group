@@ -1,91 +1,77 @@
-/* mission.css — 取代整檔 */
+html, body {
+  height: 100%;
+}
 body {
   margin: 0;
-  padding: 0;
   font-family: sans-serif;
-  background: #f0f0f0 url('/images/game-background.png') center/cover no-repeat;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
+  display: grid;
+  place-items: center;
+  background: #111;   /* 外圍留黑，真正桌面放在 .stage */
   overflow: hidden;
 }
 
+/* —— 背景桌面容器 —— */
+.stage {
+  position: relative;
+  width: min(96vw, 1200px);
+  aspect-ratio: 3 / 2;   /* mission.jpg 是 1152x768 ≈ 3:2 */
+  background: url('/images/mission.jpg') center/cover no-repeat;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* —— 卡片群組 —— */
 .btn-group {
+  position: absolute;
+  left: 50%;
+  bottom: 22%;   /* 控制卡片在桌面上的上下位置 */
+  transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: 24px;
-  margin: 20px 0;
+  gap: clamp(12px, 2.2vw, 28px);
 }
 
+/* —— 送出按鈕 —— */
 .confirm-group {
-  margin-top: 24px;
-  display: flex;
-  justify-content: center;
+  position: absolute;
+  left: 50%;
+  bottom: 14%;
+  transform: translateX(-50%);
 }
 
-/* 失敗 / 成功卡片 */
+/* —— 卡片本體 —— */
 #fail-btn,
 #success-btn {
-  width: 270px;
-  height: 390px;
+  width: clamp(150px, 16vw, 260px);  /* 卡片寬度自適應 */
+  aspect-ratio: 270 / 390;           /* 維持長寬比 */
+  height: auto;
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
   border: none;
   outline: none;
-  box-shadow: none;                 /* ← 不要任何陰影 */
+  box-shadow: none;
   -webkit-tap-highlight-color: transparent;
+  transition: transform 0.18s ease;
 }
 
 #fail-btn    { background-image: url("/images/card-failure.png"); }
 #success-btn { background-image: url("/images/card-successful.png"); }
 
-/* 送出按鈕 */
+/* —— 公用按鈕 —— */
+button { background: none; color: inherit; cursor: pointer; border: none; }
+button:hover:not(:disabled), button.selected { transform: scale(1.06) translateY(-4px); }
+button:disabled { opacity: .5; cursor: default; }
+
 #confirm-btn {
-  padding: 12px 32px;
-  font-size: 18px;
+  padding: 10px 24px;
+  font-size: clamp(14px, 1.6vw, 18px);
   border-radius: 8px;
   border: 1px solid #000;
   background-color: #fff;
   color: #000;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-  margin-top: -20px;
+  transition: transform .2s ease;
 }
 #confirm-btn:hover:not(:disabled) { transform: scale(1.05); }
 
-/* 公用按鈕：移除瀏覽器預設外框與陰影 */
-button {
-  background: none;
-  color: inherit;
-  cursor: pointer;
-  transition: transform 0.18s ease;
-  outline: none;
-  box-shadow: none;                 /* ← 點下去也不要陰影 */
-  border: none;
-}
-button:focus,
-button:active {
-  outline: none;
-  box-shadow: none;                 /* ← 確保 focus/active 都沒有陰影 */
-}
-
-/* 滑過或選取：僅做放大＋微上移，營造「浮起來」的立體感 */
-button:hover:not(:disabled),
-button.selected {
-  transform: scale(1.08) translateY(-6px);
-  z-index: 2;
-}
-
-button:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
-
-
-
-/* 顯示/隱藏 */
 .hidden { display: none; }

@@ -57,11 +57,11 @@ body > * {
 }
 
 /* ——— 玩家卡牌 ——— */
+/* ——— 玩家卡牌（本體不再位移、不再放背景；只承載內容） ——— */
 .player-card, .player-self {
   position: absolute;
-  width: 165px;
-  height: 200px;
-  background: url('/images/card.png') center/cover no-repeat;
+  width: 200px;
+  height: 240px;
   border-radius: 8px;
   display: flex;
   flex-direction: column;
@@ -69,19 +69,18 @@ body > * {
   padding-top: 10px;
   text-align: center;
   border: none;
-}
-.player-card.leader {
-  background: url('/images/card-leader.png') center/cover no-repeat;
+  overflow: visible; /* 讓外框上移時不被裁切 */
+   --shift-y: 16px;
 }
 
 .avatar {
-  width: 100px;
-  height: 100px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
   overflow: hidden;
-  border: 3px solid #444;
+  border: 2px solid #444;
   background: #eee;
-  margin-top: 7px;
+  margin-top: 6px;
 }
 .avatar img {
   width: 100%;
@@ -90,13 +89,13 @@ body > * {
 }
 
 .name {
-  margin-top: 15px;
+  margin-top: 18px;
   font-size: 20px;
   font-weight: bold;
 }
 .role-label {
   font-size: 18px;
-  margin-top: 5px;
+  margin-top: 34px;
   color: darkslategray;
 }
 
@@ -317,4 +316,72 @@ body > * {
 
 .hidden {
   display: none;
+}
+/* 外框（一般） */
+.player-card::before,
+.player-self::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url('/images/basic.png') center/cover no-repeat;
+  border-radius: 8px;
+  transform: translateY(-15px);
+  z-index: 0;
+  pointer-events: none;
+}
+/* —— 自己卡：依職業切換外框（沒有對應時維持 basic.png） —— */
+.player-self[data-role="engineer"]::before  { background-image: url('/images/frame-engineer.png'); }
+.player-self[data-role="medic"]::before     { background-image: url('/images/frame-medic.png'); }
+.player-self[data-role="saboteur"]::before  { background-image: url('/images/frame-saboteur.png'); }
+.player-self[data-role="shadow"]::before    { background-image: url('/images/frame-shadow.png'); }
+.player-self[data-role="lurker"]::before    { background-image: url('/images/frame-lurker.png'); }
+.player-self[data-role="commander"]::before { background-image: url('/images/frame-commander.png'); }
+.player-self[data-role="civilian"]::before  { background-image: url('/images/frame-civilian.png'); }
+
+/* —— 領袖優先（覆蓋職業外框）：一定要放在上面那些「依職業」之後 —— */
+.player-card.leader::before,
+.player-self.leader::before {
+  background-image: url('/images/card-leader.png');
+}
+
+/* 內容層級 */
+.player-card > *,
+.player-self  > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* 只調頭貼：往下 24px（看起來剛好對準圓孔；不足就加到 26/28） */
+.player-card .avatar,
+.player-self .avatar {
+  transform: translateY(24px);
+}
+
+/* 只調名字：往下 32px，並把原本 margin-top 降低以免再疊太多 */
+.player-card .name,
+.player-self .name {
+  transform: translateY(32px);
+  margin-top: 8px;   /* 原本 18px，降一點更穩定 */
+}
+/* 自己：好平民 / 壞平民 */
+.player-self[data-role="civilian-good"]::before { background-image: url('/images/frame-civilian-good.png'); }
+.player-self[data-role="civilian-bad"]::before  { background-image: url('/images/frame-civilian-bad.png'); }
+
+/* 他人（被揭露後才顯示職業外框；平時仍是 basic） */
+.player-card.revealed[data-role="civilian-good"]::before { background-image: url('/images/frame-civilian-good.png'); }
+.player-card.revealed[data-role="civilian-bad"]::before  { background-image: url('/images/frame-civilian-bad.png'); }
+
+/* 領袖優先（務必保留在最後，覆蓋任何職業外框） */
+.player-card.leader::before,
+.player-self.leader::before {
+  background-image: url('/images/card-leader.png'); /* 保持現有圖 */
+  transform: translateY(-24px) scale(1.05);         /* 由原本約 -15px 改成 -10px，並放大 10% */
+  transform-origin: center top;                     /* 從上緣中心放大，較不會偏位 */
+}
+.name {
+  -webkit-text-stroke: 0.6px #fff;  /* Chrome/Edge/Safari */
+  /* 兼容近似：用多層陰影模擬（必要時才加） */
+  /* text-shadow:
+      0 1px 0 #fff, 0 -1px 0 #fff,
+      1px 0 0 #fff, -1px 0 0 #fff; */
 }

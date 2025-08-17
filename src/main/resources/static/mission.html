@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>任務選擇階段</title>
   <link rel="stylesheet" href="/css/mission.css" />
   <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
@@ -9,19 +9,29 @@
   <script src="/js/mission.js" defer></script>
 </head>
 <body>
-  <!-- 出戰玩家畫面 -->
-  <div id="mission-choice-panel" class="hidden">
-    <h1>請選擇你的任務卡</h1>
-    <div class="btn-group">
-      <button id="success-btn"></button>
-      <button id="fail-btn"></button>
-    </div>
-    <button id="confirm-btn" disabled>確認提交</button>
-  </div>
+  <!-- 背景桌面容器：與 mission.css 的 .stage 對應 -->
+  <div class="stage">
+    <!-- 出戰玩家畫面 -->
+    <div id="mission-choice-panel" class="">
+      <h1>請選擇你的任務卡</h1>
 
-  <!-- 非出戰玩家 or 已交卡者 -->
-  <div id="waiting-panel" class="hidden">
-    <h1>等待其他玩家提交任務卡...</h1>
+      <!-- 卡片群組：會被定位在桌面中央偏下 -->
+      <div class="btn-group">
+        <!-- 你原本是成功在左、失敗在右，就維持此順序 -->
+        <button id="success-btn" type="button"></button>
+        <button id="fail-btn" type="button"></button>
+      </div>
+
+      <!-- 確認按鈕：定位在更靠下的位置 -->
+      <div class="confirm-group">
+        <button id="confirm-btn" disabled>確認提交</button>
+      </div>
+    </div>
+
+    <!-- 非出戰玩家 or 已交卡者 -->
+    <div id="waiting-panel" class="hidden">
+      <h1>等待其他玩家提交任務卡...</h1>
+    </div>
   </div>
 </body>
 </html>

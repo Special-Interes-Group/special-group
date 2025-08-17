@@ -19,12 +19,11 @@ async function fetchExpedition() {
     const data = await res.json();
     expedition = data.expedition || [];
 
-    // 出戰者顯示選擇面板
+    // 出戰者顯示選擇面板；否則顯示等待
     if (expedition.includes(playerName)) {
       choicePanel.classList.remove("hidden");
       waitingPanel.classList.add("hidden");
     } else {
-      // 不是出戰者顯示等待
       waitingPanel.classList.remove("hidden");
       choicePanel.classList.add("hidden");
     }
@@ -47,6 +46,7 @@ failBtn.addEventListener("click", () => {
   successBtn.classList.remove("selected");
   confirmBtn.disabled = false;
 });
+
 confirmBtn.addEventListener("click", async () => {
   if (!selectedCard) return;
 
@@ -57,7 +57,7 @@ confirmBtn.addEventListener("click", async () => {
   confirmBtn.textContent = "已送出";
 
   try {
-    await fetch(`/api/room/${roomId}/mission-result`, {
+    const res = await fetch(`/api/room/${roomId}/mission-result`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -65,17 +65,20 @@ confirmBtn.addEventListener("click", async () => {
         result: selectedCard
       })
     });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-    // ✅ 成功後切換畫面
+    // ✅ 成功後切換畫面（不再顯示「你已選擇...」那串文字）
     choicePanel.classList.add("hidden");
     waitingPanel.classList.remove("hidden");
-    waitingPanel.innerHTML = `
-      <h2>你已選擇：${selectedCard === "SUCCESS" ? "✅ 成功" : "❌ 失敗"}</h2>
-      <p>等待其他玩家提交任務卡...</p>
-    `;
+    // 不改動 waitingPanel 的既有內容（或保持空白）
   } catch (err) {
     alert("❌ 任務卡送出失敗");
     console.error(err);
+    // 復原按鈕狀態
+    successBtn.disabled = false;
+    failBtn.disabled = false;
+    confirmBtn.disabled = false;
+    confirmBtn.textContent = "確認提交";
   }
 });
 
