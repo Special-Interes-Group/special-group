@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongo-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  # 可省略，使用預設 StorageClass
+  # storageClassName: ""   # ← 若你叢集有預設 SC，就不要寫這行

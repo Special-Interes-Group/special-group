@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: myweb-app
+  namespace: special-group
+spec:
+  selector:
+    app: myweb-app   # ✅ 改成跟 Deployment 一樣
+  ports:
+    - protocol: TCP
+      port: 8080        # Service 對外提供的 port
+      targetPort: 8080  # Pod containerPort
+  type: ClusterIP       # 預設即可，因為 Nginx 已代理對外

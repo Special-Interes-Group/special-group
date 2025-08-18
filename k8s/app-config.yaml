@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: special-group
+data:
+  # 你的程式啟動時有印出「MONGODB_URI = null」，表示它讀這個環境變數
+  MONGODB_URI: "mongodb://mongo-service:27017/testdb"
+
+  # （可選）如果你的 Spring 也支援官方鍵名，順手一起給，兩邊都設最保險
+  SPRING_DATA_MONGODB_URI: "mongodb://mongo-service:27017/testdb"
+
+  # 你原本的 profile
+  SPRING_PROFILES_ACTIVE: "docker"
