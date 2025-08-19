@@ -15,7 +15,7 @@ body {
   position: relative;
   width: min(96vw, 1200px);
   aspect-ratio: 3 / 2;   /* mission.jpg 是 1152x768 ≈ 3:2 */
-  background: url('/images/mission.jpg') center/cover no-repeat;
+  background: url('/images/mission.png') center/cover no-repeat;
   border-radius: 8px;
   overflow: hidden;
 }
