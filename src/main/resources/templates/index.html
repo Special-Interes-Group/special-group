@@ -1,20 +1,42 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 加入響應式設置 -->
-    <title>末日地下城對抗</title>
-    <link rel="stylesheet" href="/css/styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>末日地下城對抗</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+  
 </head>
 <body>
-    <div class="container">
-        <img src="/images/title3.png" alt="末日地下城對抗" id="title">
-        <div class="button-container">
-            <a href="/game" class="btn btn1"><span>遊戲開始</span></a>
-            <a href="/about" class="btn btn2"><span>遊戲介紹</span></a>
-            <a href="/team" class="btn btn3"><span>開發團隊</span></a>
-        </div>
+  <div class="container">
+    <img src="/images/title3.png" alt="末日地下城對抗" id="title" />
+    <div class="button-container" id="menu">
+      <!-- 這些連結都會在外殼的 iframe（name="app"）中開啟 -->
+      <a href="/game"  target="app" class="btn btn1"><span>遊戲開始</span></a>
+      <a href="/about" target="app" class="btn btn2"><span>遊戲介紹</span></a>
+      <a href="/team"  target="app" class="btn btn3"><span>開發團隊</span></a>
     </div>
+  </div>
+
+  <script>
+    // 若使用者直接打 /index 進來（不是在外殼 iframe 裡），導到外殼並指定回到本頁
+    if (window.top === window.self) {
+      // 把目標頁帶在 hash：外殼會讀取並導到 iframe
+      window.location.replace('/bgm-shell.html#' + encodeURIComponent('/index'));
+    }
+
+    // 一次性保險：第一次任意點擊就要求外殼播放 BGM（不影響導頁）
+    document.addEventListener('pointerdown', () => {
+      try { window.top.postMessage({ type: 'bgm:play' }, '*'); } catch {}
+    }, { once: true });
+
+    // 你也可以在第一次按鍵時觸發（例如用鍵盤操作）
+    document.addEventListener('keydown', () => {
+      try { window.top.postMessage({ type: 'bgm:play' }, '*'); } catch {}
+    }, { once: true });
+
+    // 若你要做音量面板，可這樣告訴外殼：
+    // window.top.postMessage({ type: 'bgm:setVolume', value: 0.6 }, '*'); // 0~1
+  </script>
 </body>
 </html>

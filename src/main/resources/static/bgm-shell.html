@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="zh-TW">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>BGM Shell</title>
+  <style>
+    html, body { margin:0; height:100%; overflow:hidden; }
+    iframe.app-frame {
+      position:absolute; inset:0; width:100%; height:100%; border:0;
+    }
+    /* 一次性全螢幕遮罩（每次載入都會顯示，點一下解鎖） */
+    #overlay {
+      position: fixed; inset: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 9999;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+    }
+    #overlay-text {
+      color: #fff; font-size: 22px; font-family: system-ui,"Noto Sans TC",sans-serif;
+      background: rgba(0,0,0,0.7); padding: 14px 24px; border-radius: 12px;
+    }
+  </style>
+</head>
+<body>
+  <!-- 背景音樂在外殼：換頁不中斷 -->
+  <audio id="bgm" src="/audio/bgm_main.mp3" preload="auto" loop playsinline></audio>
+
+  <!-- 內頁：不寫死 src，開機用 JS 還原到上次內頁或預設 /index -->
+  <iframe class="app-frame" name="app" allow="autoplay"></iframe>
+
+  <!-- 遮罩：每次載入都會顯示，點一下才播放 -->
+  <div id="overlay"><div id="overlay-text">點一下以開啟音效</div></div>
+
+  <script>
+  (function(){
+    // ===== 常數與節點 =====
+    const audio   = document.getElementById('bgm');
+    const overlay = document.getElementById('overlay');
+    const iframe  = document.querySelector('iframe.app-frame');
+
+    const KEY_VOL = 'bgm_volume';   // 記憶音量（0~100）
+    const KEY_URL = 'app:lastUrl';  // 內頁最後 URL（/path?query#hash）
+    const DEFAULT_URL = '/index';   // Thymeleaf 首頁路由
+
+    // ===== A. 初始化：還原內頁 URL（避免外殼硬刷新回首頁）=====
+    function getRestoreUrl() {
+      if (location.hash && location.hash.length > 1) {
+        // 外殼網址如：/bgm-shell.html#/game?x=1
+        return decodeURIComponent(location.hash.slice(1));
+      }
+      const saved = sessionStorage.getItem(KEY_URL);
+      return saved || DEFAULT_URL;
+    }
+    iframe.src = getRestoreUrl();
+
+    // 內頁載入時，同步目前 URL 到 sessionStorage 與外殼 hash
+    iframe.addEventListener('load', () => {
+      try {
+        const w = iframe.contentWindow;
+        const url = w.location.pathname + w.location.search + w.location.hash;
+        sessionStorage.setItem(KEY_URL, url);
+        const newHash = '#'+encodeURIComponent(url);
+        if (location.hash !== newHash) {
+          history.replaceState(null, '', newHash);
+        }
+      } catch (e) {
+        // 只會在跨網域時發生；同網域不影響
+        console.warn('[shell] cannot read iframe URL:', e);
+      }
+    });
+
+    // 外殼 hash 被更改（或硬刷新帶 hash）→ 導向目標內頁
+    window.addEventListener('hashchange', () => {
+      const to = getRestoreUrl();
+      if (!to) return;
+      if (iframe.contentWindow) {
+        iframe.contentWindow.location.replace(to);
+      } else {
+        iframe.src = to;
+      }
+    });
+
+    // ===== B. 音量記憶：避免被記成 0 導致「有播放但沒聲音」 =====
+    // 若曾把音量記成 0，開殼時自動遷移成 60
+    if (Number(localStorage.getItem(KEY_VOL)) <= 0) {
+      localStorage.setItem(KEY_VOL, '60');
+    }
+
+    function readTargetVolume() {
+      const sv = Number(localStorage.getItem(KEY_VOL));
+      // 若沒有存或 <=0 → 預設 0.6，並修正儲存值
+      if (Number.isNaN(sv) || sv <= 0) {
+        localStorage.setItem(KEY_VOL, '60');
+        return 0.6;
+      }
+      // 設最小下限 0.05，避免極小聲像沒聲音
+      return Math.max(0.05, Math.min(1, sv / 100));
+    }
+
+    // 還原目前音量（用上面的安全讀取）
+    (function restoreVolume(){
+      audio.volume = readTargetVolume();
+    })();
+
+    // ===== C. BGM 播放與淡入 =====
+    async function startBGM() {
+      try {
+        audio.muted = false; // 取消可能的靜音狀態（分頁/系統）
+        const targetVol = readTargetVolume();
+
+        const startVol = 0;
+        audio.volume = startVol;
+        await audio.play(); // 需要使用者手勢才保證成功
+
+        // 淡入
+        let v = startVol;
+        const t = setInterval(()=>{
+          v += 0.05;
+          audio.volume = Math.min(targetVol, v);
+          if (v >= targetVol) clearInterval(t);
+        }, 60);
+        return true;
+      } catch (e) {
+        console.warn('[shell] play failed:', e);
+        return false;
+      }
+    }
+
+    // ===== D. 每次載入外殼都需點擊一次解鎖 =====
+    (function initBGM(){
+      overlay.style.display = 'flex';
+
+      // 點擊遮罩 → 播放成功後移除遮罩
+      overlay.addEventListener('click', async ()=>{
+        const ok = await startBGM();
+        if (ok) overlay.remove();
+      }, { once: true });
+
+      // 額外保險：若使用者直接點其他地方或按鍵也可觸發播放（一次即可）
+      ['pointerdown','keydown'].forEach(evt=>{
+        window.addEventListener(evt, async ()=>{
+          if (!audio.paused) return;
+          try { await audio.play(); } catch {}
+        }, { once: true });
+      });
+    })();
+
+    // ===== E. 從子頁控制（齒輪音量面板）=====
+    // 子頁以 postMessage 傳遞控制指令：bgm:setVolume / bgm:play / bgm:pause
+    window.addEventListener('message', (ev)=>{
+      const msg = ev && ev.data;
+      if (!msg || typeof msg !== 'object') return;
+
+      if (msg.type === 'bgm:setVolume') {
+        const v = Math.max(0, Math.min(1, Number(msg.value)));
+        if (!Number.isNaN(v)) {
+          audio.volume = v;
+          localStorage.setItem(KEY_VOL, String(Math.round(v * 100)));
+        }
+      } else if (msg.type === 'bgm:play') {
+        audio.muted = false;
+        audio.play().catch(()=>{});
+      } else if (msg.type === 'bgm:pause') {
+        audio.pause();
+      }
+    });
+
+    // ===== F. 鍵盤刷新只重載內頁（外殼不動，音樂不中斷）=====
+    window.addEventListener('keydown', (e) => {
+      const isF5    = e.key === 'F5';
+      const isCtrlR = e.ctrlKey && (e.key === 'r' || e.key === 'R');
+      const isMetaR = e.metaKey && (e.key === 'r' || e.key === 'R'); // macOS
+      if (isF5 || isCtrlR || isMetaR) {
+        e.preventDefault();
+        if (iframe.contentWindow) iframe.contentWindow.location.reload();
+      }
+    });
+  })();
+  </script>
+</body>
+</html>

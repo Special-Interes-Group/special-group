@@ -28,3 +28,26 @@ function toggleUserInfoPopup() {
     const popup = document.getElementById("user-info-popup");
     popup.classList.toggle("hidden");
 }
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  const volSlider = document.getElementById('bgm-volume');
+  if (!volSlider) return;
+
+  // 從 localStorage 還原音量
+  try {
+    const saved = Number(localStorage.getItem('bgm_volume'));
+    if (!Number.isNaN(saved)) volSlider.value = saved;
+  } catch {}
+
+  // 當拉桿調整時，傳訊息給外殼控制 BGM
+  volSlider.addEventListener('input', () => {
+    const v = Math.max(0, Math.min(1, volSlider.value / 100));
+    try {
+      window.top.postMessage({ type: 'bgm:setVolume', value: v }, '*');
+      localStorage.setItem('bgm_volume', volSlider.value); // 同步更新
+    } catch {}
+  });
+});
+
+
