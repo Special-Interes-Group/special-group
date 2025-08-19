@@ -1,6 +1,6 @@
 body {
   font-family: 'Noto Sans TC', sans-serif;
-  background: url('/images/game-background.png') center/cover no-repeat;
+  background: linear-gradient(rgba(0,0,0,.35), rgba(0,0,0,.55)), url('/images/game-background.png') center/cover no-repeat fixed;
   height: 100vh;
   margin: 0;
   display: flex;
@@ -9,8 +9,37 @@ body {
   flex-direction: column;
   color: white;
   text-align: center;
-  background-attachment: fixed;
 }
+
+/* ⭐ 不同角色背景 */
+body.role-engineer {
+  background: linear-gradient(rgba(0,0,0,.35), rgba(0,0,0,.55)), url('/images/skill-bg/engineer.png') center/cover no-repeat fixed;
+}
+body.role-medic {
+  background: linear-gradient(rgba(0,0,0,.35), rgba(0,0,0,.55)), url('/images/skill-bg/medic.png') center/cover no-repeat fixed;
+}
+body.role-saboteur {
+  background: linear-gradient(rgba(0,0,0,.35), rgba(0,0,0,.55)), url('/images/skill-bg/saboteur.png') center/cover no-repeat fixed;
+}
+body.role-shadow {
+  background: linear-gradient(rgba(0,0,0,.35), rgba(0,0,0,.55)), url('/images/skill-bg/shadow.png') center/cover no-repeat fixed;
+}
+body.role-lurker {
+  background: linear-gradient(rgba(0,0,0,.35), rgba(0,0,0,.55)), url('/images/skill-bg/lurker.png') center/cover no-repeat fixed;
+}
+body.role-commander {
+  background: linear-gradient(rgba(0,0,0,.35), rgba(0,0,0,.55)), url('/images/skill-bg/commander.png') center/cover no-repeat fixed;
+}
+body.role-civilian-good {
+  background: linear-gradient(rgba(0,0,0,.35), rgba(0,0,0,.55)), url('/images/skill-bg/civilian-good.png') center/cover no-repeat fixed;
+}
+body.role-civilian-bad {
+  background: linear-gradient(rgba(0,0,0,.35), rgba(0,0,0,.55)), url('/images/skill-bg/civilian-bad.png') center/cover no-repeat fixed;
+}
+body.role-civilian {
+  background: linear-gradient(rgba(0,0,0,.35), rgba(0,0,0,.55)), url('/images/skill-bg/civilian.png') center/cover no-repeat fixed;
+}
+
 
 #waiting-panel, #my-skill-panel {
   background-color: rgba(0, 0, 0, 0.6);

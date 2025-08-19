@@ -38,7 +38,6 @@ const shadowBtn = document.getElementById("use-shadow-skill-btn");
 const shadowStatus = document.getElementById("shadow-status-msg");
 
 let myRole = null;
-
 // ✅ 初始化
 document.addEventListener("DOMContentLoaded", async () => {
   myRole = await fetchMyRole();
@@ -46,6 +45,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     alert("無法取得你的角色，請重新進入遊戲");
     return;
   }
+
+  // ⭐ 依角色套用背景
+  applyRoleTheme(myRole);
 
   if (myRole === "潛伏者") await fetchLurkerTargets();
   if (myRole === "指揮官") await fetchCommanderTargets();
@@ -56,6 +58,27 @@ document.addEventListener("DOMContentLoaded", async () => {
   connectSkillPhase();
   startCountdown(20);
 });
+
+// ⭐ 新增：角色名稱轉換 + 套用背景
+function normalizeRoleKey(name) {
+  const map = {
+    '工程師':  'engineer',
+    '醫護兵':  'medic',
+    '破壞者':  'saboteur',
+    '影武者':  'shadow',
+    '潛伏者':  'lurker',
+    '指揮官':  'commander',
+    '普通倖存者': 'civilian-good',
+    '邪惡平民':   'civilian-bad',
+    '平民':      'civilian'
+  };
+  return map[name] || String(name).toLowerCase();
+}
+
+function applyRoleTheme(roleName) {
+  const key = normalizeRoleKey(roleName);
+  document.body.classList.add(`role-${key}`);
+}
 
 // ✅ 取得自己的角色
 async function fetchMyRole() {
