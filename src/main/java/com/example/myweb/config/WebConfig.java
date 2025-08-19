@@ -1,5 +1,6 @@
 package com.example.myweb.config;
 
+import org.springframework.lang.NonNull;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -7,7 +8,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
     @Override
-    public void addViewControllers(ViewControllerRegistry r) {
+    public void addViewControllers(@NonNull ViewControllerRegistry r) {
         // 根路徑導到外殼頁（static 下的檔案）
         r.addRedirectViewController("/", "/bgm-shell.html");
 

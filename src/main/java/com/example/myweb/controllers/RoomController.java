@@ -883,13 +883,13 @@ public class RoomController {
             return ResponseEntity.notFound().build();
         }
 
+        // ✅ 標記遊戲結束時間
+        room.setEndTime(LocalDateTime.now());
+        roomRepository.save(room);
+
         // 好人陣營角色清單
         Set<String> goodRoles = Set.of(
-            "普通倖存者",
-            "工程師",
-            "指揮官",
-            "醫護兵"
-            // 其他好人角色
+            "普通倖存者", "工程師", "指揮官", "醫護兵"
         );
 
         Map<String, String> playerResults = new HashMap<>();
@@ -917,7 +917,7 @@ public class RoomController {
         record.setPlayerResults(playerResults);
         gameRecordRepository.save(record);
 
-        // ✅ 新增：廣播遊戲結束資料（包含卡數）
+        // ✅ 廣播遊戲結束資料
         simpMessagingTemplate.convertAndSend(
             "/topic/room/" + roomId,
             Map.of(
@@ -928,11 +928,8 @@ public class RoomController {
             )
         );
 
-        // 刪除房間
-        roomRepository.deleteById(roomId);
-
         return ResponseEntity.ok(Map.of(
-            "message", "遊戲結束，紀錄已保存並刪除房間",
+            "message", "遊戲結束，紀錄已保存，房間將於3分鐘後自動刪除",
             "recordId", record.getId()
         ));
     }

@@ -6,6 +6,8 @@ import com.example.myweb.repositories.RoomRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.scheduling.annotation.Scheduled;
+import java.time.LocalDateTime;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -314,6 +316,25 @@ public class RoomService {
        return room.getShadowDisabledMap()
            .getOrDefault(currentRound, Collections.emptySet())
            .contains(playerName);
+    }
+
+    private final RoomRepository roomRepository;
+
+    public RoomService(RoomRepository roomRepository) {
+        this.roomRepository = roomRepository;
+    }
+
+    // ✅ 每分鐘檢查一次，刪除結束超過3分鐘的房間
+    @Scheduled(fixedRate = 60000)
+    public void cleanUpRooms() {
+        var rooms = roomRepository.findAll();
+        for (Room r : rooms) {
+            if (r.getEndTime() != null &&
+                r.getEndTime().plusMinutes(3).isBefore(LocalDateTime.now())) {
+                roomRepository.deleteById(r.getId());
+                System.out.println("自動刪除房間: " + r.getId());
+            }
+        }
     }
     
 

@@ -2,7 +2,7 @@ package com.example.myweb.models;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-
+import java.time.LocalDateTime;
 import java.util.*;
 
 /**
@@ -18,6 +18,7 @@ public class Room {
     private int    playerCount;
     private String roomType;          // public / private
     private String roomPassword;
+    private LocalDateTime endTime;
 
     private List<String>         players   = new ArrayList<>();
     private Map<String,String>   avatarMap = new HashMap<>();
@@ -290,6 +291,15 @@ public class Room {
 
     public void setLeader(String leader) {
         this.leader = leader;
+    }
+    
+
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
     }
     
 }
