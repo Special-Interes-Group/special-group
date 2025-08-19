@@ -1,2 +1,45 @@
-/mvnw text eol=lf
-*.cmd text eol=crlf
+# ==========================
+# Git Attributes for Spring Boot + Frontend Project
+# ==========================
+
+# ---- 程式碼檔案：統一 LF ----
+*.java      text eol=lf
+*.xml       text eol=lf
+*.properties text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+
+*.html      text eol=lf
+*.css       text eol=lf
+*.js        text eol=lf
+*.ts        text eol=lf
+*.json      text eol=lf
+*.md        text eol=lf
+*.txt       text eol=lf
+*.sh        text eol=lf
+
+# ---- Windows/Linux 可執行檔：保持 LF ----
+*.bat       text eol=crlf
+*.cmd       text eol=crlf
+
+# ---- 二進位檔案：保持原樣 ----
+*.png       binary
+*.jpg       binary
+*.jpeg      binary
+*.gif       binary
+*.svg       binary
+*.ico       binary
+
+*.jar       binary
+*.war       binary
+*.zip       binary
+*.gz        binary
+*.tar       binary
+*.7z        binary
+
+*.exe       binary
+*.dll       binary
+
+# ---- Git ignore 自動產生的差異，不要轉換 ----
+.gitattributes  text eol=lf
+.gitignore      text eol=lf
