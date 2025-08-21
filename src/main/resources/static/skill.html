@@ -78,6 +78,16 @@
       <button id="use-shadow-skill-btn">封鎖技能</button>
       <p id="shadow-status-msg" class="error"></p>
     </div>
+    <div id="civilian-ultimate-panel" class="hidden">
+      <h3>🎯 終極技能：猜所有玩家的陣營（最後一回合）</h3>
+      <p>若全部猜對，你所屬陣營 +1 分。</p>
+
+      <!-- 動態產生每位玩家的下拉選單（之後用 JS 塞） -->
+      <div id="civilian-ultimate-guess"></div>
+
+      <button id="use-civilian-ultimate-btn">提交猜測</button>
+      <p id="civilian-ultimate-status" class="mt-2"></p>
+    </div>
   </div>
 </body>
 </html>

@@ -58,6 +58,49 @@ document.addEventListener("DOMContentLoaded", async () => {
   connectSkillPhase();
   startCountdown(20);
 });
+// —— 角色判斷輔助 —— //
+function isGoodCivilian(name) {
+  return name === "普通倖存者" || name === "平民" || name === "civilian-good";
+}
+function isBadCivilian(name) {
+  return name === "邪惡平民" || name === "civilian-bad";
+}
+function isCivilian(name) {
+  return isGoodCivilian(name) || isBadCivilian(name);
+}
+
+// —— 沉浸式等待文案 —— //
+function immersiveMessage(roleName) {
+  if (isGoodCivilian(roleName)) {
+    return "您的農作物將在最後迎來豐收，耐心照料這片土地。";
+  }
+  if (isBadCivilian(roleName)) {
+    return "陰影正在集結，等待最後的號角響起。";
+  }
+  // 其他職業（可依世界觀再細修）
+  switch (roleName) {
+    case "工程師":  return "你正在校準儀表與管線，等待系統指示。";
+    case "醫護兵":  return "你在整理醫療包與繃帶，靜候下一個訊號。";
+    case "破壞者":  return "你在擦拭工具，默數倒計時的每一刻。";
+    case "潛伏者":  return "你貼近牆角，呼吸如絲，等待破綻。";
+    case "影武者":  return "你隱沒在縫隙之中，凝視即將落下的夜幕。";
+    case "指揮官":  return "你檢閱地圖與旗幟，等待最後的口令。";
+    default:        return "靜待時機，讓命運的指針走到應屬於你的刻度。";
+  }
+}
+// —— 顯示世界觀句子，並隱藏技能面板 —— //
+function showImmersiveForRole(roleName) {
+  const msg = immersiveMessage(roleName);
+  const skillMsg = document.getElementById("skill-msg");   // 你原本顯示狀態的文字區
+  const waitingPanel = document.getElementById("waiting-panel");
+  const skillPanel = document.getElementById("my-skill-panel");
+  if (skillMsg) skillMsg.textContent = msg;
+  if (waitingPanel) waitingPanel.classList.remove("hidden");
+  if (skillPanel) skillPanel.classList.add("hidden");
+  const ultPanel = document.getElementById("civilian-ultimate-panel");
+  if (ultPanel) ultPanel.classList.add("hidden");
+}
+
 
 // ⭐ 新增：角色名稱轉換 + 套用背景
 function normalizeRoleKey(name) {
@@ -104,7 +147,6 @@ function connectSkillPhase() {
         }, 2000);
       }
     });
-
     fetch(`/api/room/${roomId}/skill-state`)
       .then(res => res.json())
       .then(data => {
@@ -124,13 +166,50 @@ function connectSkillPhase() {
           if (myRole === "醫護兵") medicPanel.classList.remove("hidden");
           if (myRole === "影武者") shadowPanel.classList.remove("hidden");
         } else {
-          skillMsg.textContent = "你不是技能角色，請等待技能階段結束...";
-          waitingPanel.classList.remove("hidden");
-          skillPanel.classList.add("hidden");
-        }
-      });
-  });
-}
+          // 抓房間資訊來判斷是否最後一回合
+          fetch(`/api/room/${roomId}`)
+            .then(r => r.json())
+            .then(room => {
+              const isFinalRound = room.currentRound === room.totalRounds;
+
+              if (isCivilian(myRole)) {
+                if (isFinalRound) {
+                  // —— 平民在最後一回合顯示「終極技能」面板 —— //
+                  const ultPanel = document.getElementById("civilian-ultimate-panel");
+                  const skillPanel = document.getElementById("my-skill-panel");
+                  const waitingPanel = document.getElementById("waiting-panel");
+                  if (ultPanel) {
+                    ultPanel.classList.remove("hidden");
+                    fetchCivilianUltimateTargets();
+                  }
+                  if (waitingPanel) waitingPanel.classList.add("hidden");
+                  if (skillPanel)   skillPanel.classList.remove("hidden");
+                  const skillMsg = document.getElementById("skill-msg");
+                  if (skillMsg) skillMsg.textContent = immersiveMessage(myRole); // 可保留一行敘事
+                } else {
+                  // —— 平民：除了最後一回合，永遠顯示世界觀句子 —— //
+                  showImmersiveForRole(myRole);
+                }
+              } else {
+                // 非平民（工程師/醫護兵/影武者...）
+                // 尚未使用技能時維持原本流程，但文案也改成沉浸式
+                const skillMsg = document.getElementById("skill-msg");
+                const waitingPanel = document.getElementById("waiting-panel");
+                const skillPanel = document.getElementById("my-skill-panel");
+                if (skillMsg) skillMsg.textContent = immersiveMessage(myRole);
+                if (waitingPanel) waitingPanel.classList.remove("hidden");
+                if (skillPanel)   skillPanel.classList.add("hidden");
+              }
+            })
+            .catch(() => {
+              // 取不到房間就以沉浸式等待處理
+              showImmersiveForRole(myRole);
+            });
+        } // ← 收掉 else
+      }); // ← 收掉 .then(data => { ... })
+  });   // ← 收掉 stompClient.connect 回呼
+}       // ← 收掉 function connectSkillPhase
+
 
 // ✅ 工程師
 async function showEngineerResult() {
@@ -214,6 +293,7 @@ lurkerBtn.addEventListener("click", async () => {
     });
 
     if (res.ok) {
+       showImmersiveForRole(myRole); // ← 新增這行：影武者用完當回合就顯示敘事
       lurkerStatus.textContent = "✅ 技能使用成功，該玩家卡片屬性已反轉";
       lurkerBtn.disabled = true;
       lurkerSelect.disabled = true;
@@ -264,6 +344,7 @@ commanderBtn.addEventListener("click", async () => {
     });
 
     if (res.ok) {
+       showImmersiveForRole(myRole); // ← 新增這行：影武者用完當回合就顯示敘事
       const data = await res.json();
       commanderResult.textContent = `🔍 ${selected} 的陣營是：${data.faction}（剩餘次數：${data.remaining}）`;
       commanderBtn.disabled = true;
@@ -323,6 +404,7 @@ saboteurBtn.addEventListener("click", async () => {
     });
 
     if (res.ok) {
+       showImmersiveForRole(myRole); // ← 新增這行：影武者用完當回合就顯示敘事
       const data = await res.json();
       saboteurStatus.textContent = `🧨 已使 ${selected} 的卡片 (${data.removed}) 失效！剩餘次數 ${data.remaining}`;
       saboteurBtn.disabled = true;
@@ -382,6 +464,7 @@ saboteurBtn.addEventListener("click", async () => {
       });
 
       if (res.ok) {
+         showImmersiveForRole(myRole); // ← 新增這行：影武者用完當回合就顯示敘事
         medicStatus.textContent = `🛡️ 已成功保護 ${selected}（整場限一次）`;
         medicBtn.disabled = true;
         medicSelect.disabled = true;
@@ -445,6 +528,7 @@ saboteurBtn.addEventListener("click", async () => {
       });
 
       if (res.ok) {
+         showImmersiveForRole(myRole); // ← 新增這行：影武者用完當回合就顯示敘事
         shadowStatus.textContent = `❌ ${target} 下一回合無法發動技能`;
         shadowBtn.disabled = true;
         shadowSelect.disabled = true;
@@ -479,3 +563,87 @@ async function startCountdown(seconds) {
     }
   }, 1000);
 }
+// —— 平民終極技能：載入所有玩家下拉 —— //
+async function fetchCivilianUltimateTargets() {
+  try {
+    const res = await fetch(`/api/room/${roomId}`);
+    const room = await res.json();
+    const container = document.getElementById("civilian-ultimate-guess");
+    if (!container) return; // HTML 尚未插入就跳過
+
+    container.innerHTML = "";
+    (room.players || []).forEach(p => {
+      if (p !== playerName) {
+        const wrap = document.createElement("div");
+        wrap.style.margin = "6px 0";
+
+        const label = document.createElement("label");
+        label.textContent = `${p}：`;
+
+        const sel = document.createElement("select");
+        sel.id = `guess-${p}`;
+        sel.innerHTML = `
+          <option value="">-- 選擇陣營 --</option>
+          <option value="good">好人</option>
+          <option value="evil">壞人</option>
+        `;
+        sel.style.marginLeft = "8px";
+
+        wrap.appendChild(label);
+        wrap.appendChild(sel);
+        container.appendChild(wrap);
+      }
+    });
+  } catch (err) {
+    console.error("❌ 終極技能名單載入失敗", err);
+  }
+}
+
+// —— 平民終極技能：提交猜測 —— //
+(function bindCivilianUltimateSubmitOnce() {
+  // 若 HTML 尚未插入，這裡不會綁定；等進面板顯示時再由 fetchCivilianUltimateTargets 補上內容
+  const btn = document.getElementById("use-civilian-ultimate-btn");
+  const statusEl = document.getElementById("civilian-ultimate-status");
+  if (!btn) return;
+
+  btn.addEventListener("click", async () => {
+    try {
+      const resRoom = await fetch(`/api/room/${roomId}`);
+      const room = await resRoom.json();
+      const guesses = {};
+      let allChosen = true;
+
+      (room.players || []).forEach(p => {
+        if (p !== playerName) {
+          const sel = document.getElementById(`guess-${p}`);
+          const val = sel ? sel.value : "";
+          if (!val) allChosen = false;
+          guesses[p] = val;
+        }
+      });
+
+      if (!allChosen) {
+        if (statusEl) statusEl.textContent = "⚠️ 每個人都要選完。";
+        return;
+      }
+
+      const res = await fetch("/api/skill/civilian-ultimate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ roomId, playerName, guesses })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (statusEl) statusEl.textContent = data.message || "已提交。";
+        btn.disabled = true;
+      } else {
+        const err = await res.text();
+        if (statusEl) statusEl.textContent = "❌ 發動失敗：" + err;
+      }
+    } catch (err) {
+      if (statusEl) statusEl.textContent = "❌ 發送錯誤：" + err;
+    }
+  });
+})();
+

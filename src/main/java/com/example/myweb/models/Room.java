@@ -1,9 +1,15 @@
 package com.example.myweb.models;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import java.time.LocalDateTime;
-import java.util.*;
 
 /**
  * 遊戲房間資料模型（MongoDB）
@@ -301,5 +307,26 @@ public class Room {
     public void setEndTime(LocalDateTime endTime) {
         this.endTime = endTime;
     }
+    // ✅ 若沒有就新增：最後回合上限
+private int maxRound;  // 若你原本叫 totalRounds 或 roundLimit，就把名稱對應起來
+
+public int getMaxRound() { return maxRound; }
+public void setMaxRound(int maxRound) { this.maxRound = maxRound; }
+
+// ✅ 平民終極技能使用紀錄
+private Map<String, Boolean> civilianUltimateUsed = new HashMap<>();
+
+public Map<String, Boolean> getCivilianUltimateUsed() { return civilianUltimateUsed; }
+public void setCivilianUltimateUsed(Map<String, Boolean> civilianUltimateUsed) { this.civilianUltimateUsed = civilianUltimateUsed; }
+
+// ✅ 額外加分（終極技能用）
+private int goodExtraScore = 0;
+private int evilExtraScore = 0;
+
+public int getGoodExtraScore() { return goodExtraScore; }
+public void setGoodExtraScore(int goodExtraScore) { this.goodExtraScore = goodExtraScore; }
+public int getEvilExtraScore() { return evilExtraScore; }
+public void setEvilExtraScore(int evilExtraScore) { this.evilExtraScore = evilExtraScore; }
+
     
 }
