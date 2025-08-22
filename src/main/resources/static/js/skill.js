@@ -45,10 +45,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     alert("無法取得你的角色，請重新進入遊戲");
     return;
   }
-
+skillRoleLabel?.textContent = `角色：${myRole}`;
   // ⭐ 依角色套用背景
   applyRoleTheme(myRole);
-
+if (myRole === "工程師") {
+    waitingPanel?.classList.add("hidden");
+    skillPanel?.classList.remove("hidden");
+    engineerPanel?.classList.remove("hidden");
+    await showEngineerResult();
+  }
   if (myRole === "潛伏者") await fetchLurkerTargets();
   if (myRole === "指揮官") await fetchCommanderTargets();
   if (myRole === "破壞者") await fetchSaboteurTargets();
@@ -91,7 +96,7 @@ function immersiveMessage(roleName) {
 // —— 顯示世界觀句子，並隱藏技能面板 —— //
 function showImmersiveForRole(roleName) {
   const msg = immersiveMessage(roleName);
-  const skillMsg = document.getElementById("skill-msg");   // 你原本顯示狀態的文字區
+  const skillMsg = document.getElementById("skill-message"); // ← 改這裡
   const waitingPanel = document.getElementById("waiting-panel");
   const skillPanel = document.getElementById("my-skill-panel");
   if (skillMsg) skillMsg.textContent = msg;
@@ -129,17 +134,15 @@ async function fetchMyRole() {
   const data = await res.json();
   return data.assignedRoles[playerName]?.name || null;
 }
-
-// ✅ WebSocket 連線 + 技能流程啟動
+// ✅ WebSocket 連線 + 技能流程啟動（最終版）
 function connectSkillPhase() {
   const socket = new SockJS('/ws');
   const stompClient = Stomp.over(socket);
 
   stompClient.connect({}, () => {
+    // 全部技能完成的廣播
     stompClient.subscribe(`/topic/skill/${roomId}`, msg => {
       const body = msg.body.trim();
-      console.log("🧠 技能廣播：", body);
-
       if (body === "allSkillUsed") {
         skillMsg.textContent = "所有技能發動完畢，返回遊戲畫面...";
         setTimeout(() => {
@@ -147,70 +150,93 @@ function connectSkillPhase() {
         }, 2000);
       }
     });
-    fetch(`/api/room/${roomId}/skill-state`)
-      .then(res => res.json())
-      .then(data => {
-        const skillRoles = data.remainingRoles || [];
-        console.log("技能角色列表：", skillRoles);
-        console.log("我的角色：", myRole);
 
-        if (skillRoles.includes(myRole)) {
-          skillRoleLabel.textContent = `角色：${myRole}`;
-          waitingPanel.classList.add("hidden");
-          skillPanel.classList.remove("hidden");
+    // 拿狀態後決定顯示
+    Promise.all([
+      fetch(`/api/room/${roomId}/skill-state`).then(r => r.json()),
+      fetch(`/api/room/${roomId}`).then(r => r.json())
+    ])
+    .then(([state, room]) => {
+      const finalRound = (typeof isFinalRound !== "undefined") ? !!isFinalRound : false;
 
-          if (myRole === "工程師") showEngineerResult();
-          if (myRole === "潛伏者") lurkerPanel.classList.remove("hidden");
-          if (myRole === "指揮官") commanderPanel.classList.remove("hidden");
-          if (myRole === "破壞者") saboteurPanel.classList.remove("hidden");
-          if (myRole === "醫護兵") medicPanel.classList.remove("hidden");
-          if (myRole === "影武者") shadowPanel.classList.remove("hidden");
+      // —— 平民 —— //
+      if (isCivilian(myRole)) {
+        if (finalRound) {
+          const ultPanelEl   = document.getElementById("civilian-ultimate-panel");
+          const waitingEl    = document.getElementById("waiting-panel");
+          const skillPanelEl = document.getElementById("my-skill-panel");
+          if (ultPanelEl) {
+            ultPanelEl.classList.remove("hidden");
+            fetchCivilianUltimateTargets();
+          }
+          waitingEl?.classList.add("hidden");
+          skillPanelEl?.classList.remove("hidden");
+          const msgEl = document.getElementById("skill-message");
+          if (msgEl) msgEl.textContent = immersiveMessage(myRole);
         } else {
-          // 抓房間資訊來判斷是否最後一回合
-          fetch(`/api/room/${roomId}`)
-            .then(r => r.json())
-            .then(room => {
-              const isFinalRound = room.currentRound === room.totalRounds;
+          showImmersiveForRole(myRole);
+        }
+        return;
+      }
 
-              if (isCivilian(myRole)) {
-                if (isFinalRound) {
-                  // —— 平民在最後一回合顯示「終極技能」面板 —— //
-                  const ultPanel = document.getElementById("civilian-ultimate-panel");
-                  const skillPanel = document.getElementById("my-skill-panel");
-                  const waitingPanel = document.getElementById("waiting-panel");
-                  if (ultPanel) {
-                    ultPanel.classList.remove("hidden");
-                    fetchCivilianUltimateTargets();
-                  }
-                  if (waitingPanel) waitingPanel.classList.add("hidden");
-                  if (skillPanel)   skillPanel.classList.remove("hidden");
-                  const skillMsg = document.getElementById("skill-msg");
-                  if (skillMsg) skillMsg.textContent = immersiveMessage(myRole); // 可保留一行敘事
-                } else {
-                  // —— 平民：除了最後一回合，永遠顯示世界觀句子 —— //
-                  showImmersiveForRole(myRole);
-                }
-              } else {
-                // 非平民（工程師/醫護兵/影武者...）
-                // 尚未使用技能時維持原本流程，但文案也改成沉浸式
-                const skillMsg = document.getElementById("skill-msg");
-                const waitingPanel = document.getElementById("waiting-panel");
-                const skillPanel = document.getElementById("my-skill-panel");
-                if (skillMsg) skillMsg.textContent = immersiveMessage(myRole);
-                if (waitingPanel) waitingPanel.classList.remove("hidden");
-                if (skillPanel)   skillPanel.classList.add("hidden");
-              }
-            })
-            .catch(() => {
-              // 取不到房間就以沉浸式等待處理
-              showImmersiveForRole(myRole);
-            });
-        } // ← 收掉 else
-      }); // ← 收掉 .then(data => { ... })
-  });   // ← 收掉 stompClient.connect 回呼
-}       // ← 收掉 function connectSkillPhase
+      // —— 非平民 —— //
+      const waitingEl    = document.getElementById("waiting-panel");
+      const skillPanelEl = document.getElementById("my-skill-panel");
 
+      // 1) 工程師：永遠顯示
+      if (myRole === "工程師") {
+        waitingEl?.classList.add("hidden");
+        skillPanelEl?.classList.remove("hidden");
+        engineerPanel?.classList.remove("hidden");
+        showEngineerResult();
+        return;
+      }
 
+      // 2) 其他職業：判斷是否已使用 / 用盡
+      let alreadyUsed = false;
+      switch (myRole) {
+        case "潛伏者":
+        case "破壞者":
+          alreadyUsed = !!(room.usedSkillMap?.[playerName]);
+          break;
+        case "醫護兵":
+          alreadyUsed = !!(room.medicSkillUsed?.[playerName]);
+          break;
+        case "影武者": {
+          const usedCount     = room.shadowSkillCount?.[playerName] || 0;
+          const usedThisRound = !!(room.shadowUsedThisRound?.includes(playerName));
+          alreadyUsed = usedCount >= 2 || usedThisRound;
+          break;
+        }
+        case "指揮官":
+          alreadyUsed = false; // 若未實作使用次數就視為可用
+          break;
+      }
+
+      if (alreadyUsed) {
+        showImmersiveForRole(myRole);
+        return;
+      }
+
+      // 3) 沒用完 → 顯示技能面板
+      waitingEl?.classList.add("hidden");
+      skillPanelEl?.classList.remove("hidden");
+
+      switch (myRole) {
+        case "潛伏者": lurkerPanel?.classList.remove("hidden"); break;
+        case "指揮官": commanderPanel?.classList.remove("hidden"); break;
+        case "破壞者": saboteurPanel?.classList.remove("hidden"); break;
+        case "醫護兵": medicPanel?.classList.remove("hidden"); break;
+        case "影武者": shadowPanel?.classList.remove("hidden"); break;
+      }
+    })
+    .catch(() => {
+      showImmersiveForRole(myRole);
+    });
+  });
+}
+
+  
 // ✅ 工程師
 async function showEngineerResult() {
   try {
@@ -250,13 +276,11 @@ async function fetchLurkerTargets() {
     const room = await res.json();
     const submissions = room.missionResults?.[room.currentRound]?.cardMap || {};
     const usedMap = room.usedSkillMap || {};
+if (usedMap[playerName]) {
+  showImmersiveForRole(myRole);
+  return;
+}
 
-    if (usedMap[playerName]) {
-      lurkerStatus.textContent = "❗ 你已使用過技能，無法再次使用。";
-      lurkerBtn.disabled = true;
-      lurkerSelect.disabled = true;
-      return;
-    }
 
     lurkerSelect.innerHTML = `<option value="">-- 選擇要反轉的玩家 --</option>`;
     Object.keys(submissions).forEach(player => {
@@ -366,12 +390,11 @@ async function fetchSaboteurTargets() {
     const cardMap = room.missionResults?.[room.currentRound]?.cardMap || {};
     const usedMap = room.usedSkillMap || {};
 
-    if (usedMap[playerName]) {
-      saboteurStatus.textContent = "❗ 你已使用過技能，無法再次使用。";
-      saboteurBtn.disabled = true;
-      saboteurSelect.disabled = true;
-      return;
-    }
+   if (usedMap[playerName]) {
+  showImmersiveForRole(myRole);
+  return;
+}
+
 
     saboteurSelect.innerHTML = `<option value="">-- 選擇要破壞的玩家 --</option>`;
     Object.keys(cardMap).forEach(name => {
@@ -426,12 +449,11 @@ saboteurBtn.addEventListener("click", async () => {
       const players = room.players || [];
       const usedMap = room.medicSkillUsed || {};
 
-      if (usedMap[playerName]) {
-        medicStatus.textContent = "❗ 你已使用過技能，無法再次使用。";
-        medicBtn.disabled = true;
-        medicSelect.disabled = true;
-        return;
-      }
+ if (usedMap[playerName]) {
+  showImmersiveForRole(myRole);
+  return;
+}
+
 
       medicSelect.innerHTML = `<option value="">-- 選擇要保護的玩家 --</option>`;
       players.forEach(p => {
@@ -485,19 +507,11 @@ saboteurBtn.addEventListener("click", async () => {
       const players = room.players || [];
       const used = room.shadowSkillCount?.[playerName] || 0;
       const usedThisRound = room.shadowUsedThisRound?.includes(playerName);
+if (used >= 2 || usedThisRound) {
+  showImmersiveForRole(myRole);
+  return;
+}
 
-      if (used >= 2) {
-        shadowStatus.textContent = "❗ 你已用完兩次技能";
-        shadowSelect.disabled = true;
-        shadowBtn.disabled = true;
-        return;
-      }
-      if (usedThisRound) {
-        shadowStatus.textContent = "❗ 本回合已使用過技能";
-        shadowSelect.disabled = true;
-        shadowBtn.disabled = true;
-        return;
-      }
 
       shadowSelect.innerHTML = `<option value="">-- 選擇要封鎖的玩家 --</option>`;
       players.forEach(p => {
