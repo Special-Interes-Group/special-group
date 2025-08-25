@@ -6,6 +6,7 @@
   <link rel="stylesheet" href="/css/game-front-page.css" />
   <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
   <style>
     /* 禁止選取語音視窗文字 */
     #voice-container, #voice-container * {
@@ -92,5 +93,7 @@
 
   <!-- JS 放這裡，保證 DOM 都建好 -->
   <script src="/js/game-front-page.js"></script>
+  <!-- 翻牌動畫：放在最後，確保能掃到已建立的卡牌 -->
+  <script src="/js/card-flip.js"></script>
 </body>
 </html>

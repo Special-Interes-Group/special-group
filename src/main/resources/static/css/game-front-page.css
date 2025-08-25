@@ -385,3 +385,79 @@ body > * {
       0 1px 0 #fff, 0 -1px 0 #fff,
       1px 0 0 #fff, -1px 0 0 #fff; */
 }
+/* 翻牌容器（不設定寬高，完全沿用你卡牌原本尺寸） */
+.roleflip-card { perspective: 1200px; display: inline-block; }
+
+/* 內層可翻轉 */
+.roleflip-inner {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 600ms cubic-bezier(.2,.8,.2,1);
+}
+
+/* 點擊後翻轉 */
+.roleflip-card.is-flipped .roleflip-inner { transform: rotateY(180deg); }
+
+/* 正反面：鋪滿父層，不改你原本外觀；只做定位與背面隱藏 */
+.roleflip-front, .roleflip-back {
+  position: absolute; inset: 0;
+  backface-visibility: hidden;
+}
+
+/* 正面放你原本的卡牌（我們會把你的卡牌 DOM 移進來） */
+.roleflip-front { transform: rotateY(0deg); }
+
+/* 讓背面尺寸與外框完全一致（不鋪整片黑） */
+.roleflip-back{
+  position: relative;
+  transform: rotateY(180deg);
+  display: flex; align-items: center; justify-content: center;
+  /* 內縮量 ≈ 外框厚度，依你的圖微調 16~22px */
+  padding: 18px;
+  background: transparent;      /* 不再整片黑 */
+  color: #fff;
+  border-radius: inherit;
+  overflow: visible;
+}
+
+/* 背面外框：與正面 ::before 同尺寸、同上移量 */
+.roleflip-back::before{
+  content:"";
+  position:absolute; inset:0;
+  background: url('/images/basic.png') center/cover no-repeat;
+  border-radius: 8px;
+  transform: translateY(-15px);   /* 與正面一致 */
+  z-index:0; pointer-events:none;
+}
+
+/* 背面依職業切換外框（自己卡） */
+.roleflip-back.player-self[data-role="engineer"]::before  { background-image:url('/images/frame-engineer.png'); }
+.roleflip-back.player-self[data-role="medic"]::before     { background-image:url('/images/frame-medic.png'); }
+.roleflip-back.player-self[data-role="saboteur"]::before  { background-image:url('/images/frame-saboteur.png'); }
+.roleflip-back.player-self[data-role="shadow"]::before    { background-image:url('/images/frame-shadow.png'); }
+.roleflip-back.player-self[data-role="lurker"]::before    { background-image:url('/images/frame-lurker.png'); }
+.roleflip-back.player-self[data-role="commander"]::before { background-image:url('/images/frame-commander.png'); }
+.roleflip-back.player-self[data-role="civilian"]::before  { background-image:url('/images/frame-civilian.png'); }
+.roleflip-back.player-self[data-role="civilian-good"]::before { background-image:url('/images/frame-civilian-good.png'); }
+.roleflip-back.player-self[data-role="civilian-bad"]::before  { background-image:url('/images/frame-civilian-bad.png'); }
+
+/* 領袖外框優先覆蓋（背面） */
+.roleflip-back.player-card.leader::before,
+.roleflip-back.player-self.leader::before{
+  background-image:url('/images/card-leader.png');
+  transform: translateY(-24px) scale(1.05);
+  transform-origin:center top;
+}
+
+/* 只讓文字區塊有小黑底，跟著外框內緣，不會超出卡牌 */
+.roleflip-tip{
+  position: relative;
+  z-index:1;
+  background: rgba(0,0,0,.6);
+  padding: 10px 14px;
+  border-radius: 8px;
+  max-width: calc(100% - 6px);
+  text-align:left;
+}
+.roleflip-tip h4{ margin:0 0 6px; font-size:1rem; }
+.roleflip-tip p { margin:0; line-height:1.5; font-size:.95rem; }

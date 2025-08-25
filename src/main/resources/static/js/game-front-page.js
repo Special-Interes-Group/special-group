@@ -111,12 +111,16 @@ function renderPlayers(arr){
       ${isSelf && p.role ? `<div class="role-label">角色：${p.role}</div>` : ""}
     `;
     if (isSelf && p.role) {
-  card.dataset.role = normalizeRoleKey(p.role);
-}
-    container.appendChild(card);
+     // 中文顯示名（用來對應 tips），以及英文 key（若你別處要用）
+     card.dataset.role = p.role;                         // 例：工程師 / 醫護兵…
+     card.dataset.roleKey = normalizeRoleKey(p.role);    // 例：engineer / medic…
+    }
+        container.appendChild(card);
   });
 
   document.getElementById("leader-action")?.classList.toggle("hidden", leaderId !== playerName);
+  // 新增：每次 render 完就包裝翻牌（card-flip.js 會提供這隻方法）
+  window.roleFlipWrapNewCards?.();
 }
 function normalizeRoleKey(name) {
   const map = {
