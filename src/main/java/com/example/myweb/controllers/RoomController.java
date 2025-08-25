@@ -26,6 +26,7 @@
 
 package com.example.myweb.controllers;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -51,14 +52,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.myweb.dto.AvatarSelectionRequest;
+import com.example.myweb.models.GameRecord;
 import com.example.myweb.models.MissionRecord;
 import com.example.myweb.models.Room;
 import com.example.myweb.models.Room.RoleInfo;
+import com.example.myweb.repositories.GameRecordRepository;
 import com.example.myweb.repositories.RoomRepository;
 import com.example.myweb.service.RoomService;
-import com.example.myweb.models.GameRecord;
-import com.example.myweb.repositories.GameRecordRepository;
-import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api")
@@ -621,56 +621,6 @@ public class RoomController {
     }
 
 
-   @PostMapping("/skill/lurker-toggle")
-    public ResponseEntity<?> useLurkerSkill(@RequestBody Map<String, String> body) {
-        String roomId = body.get("roomId");
-        String playerName = body.get("playerName");
-        String targetName = body.get("targetName");
-
-        Room room = roomRepository.findById(roomId).orElse(null);
-        if (room == null) return ResponseEntity.notFound().build();
-
-        // ✅ 技能限用一次
-        if (room.getUsedSkillMap().getOrDefault(playerName, false)) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("你已使用過潛伏者技能！");
-        }
-
-        int round = room.getCurrentRound();
-        MissionRecord record = room.getMissionResults().get(round);
-        if (record == null || record.getCardMap() == null || !record.getCardMap().containsKey(targetName)) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("該玩家尚未提交任務卡");
-        }
-
-        // ✅ 判斷是否受到醫護兵保護
-        String protectedPlayer = room.getMedicProtectionMap() != null
-            ? room.getMedicProtectionMap().getOrDefault(round, null)
-            : null;
-
-        if (protectedPlayer != null && protectedPlayer.equals(targetName)) {
-            return ResponseEntity.status(403).body("該玩家已受到醫護兵保護，潛伏者無法反轉此卡。");
-        }
-
-        // ✅ 標記技能已用（無論成功與否）
-        room.getUsedSkillMap().put(playerName, true);
-
-        // ✅ 若被影武者封鎖 → 不反轉卡片，但仍記為已使用
-        if (roomService.isSkillShadowed(room, playerName)) {
-            roomRepository.save(room);
-            return ResponseEntity.ok(Map.of("result", "技能已被封鎖，未反轉任何卡片"));
-        }
-
-        // ✅ 反轉卡片內容
-        String original = record.getCardMap().get(targetName);
-        String toggled = original.equals("SUCCESS") ? "FAIL" : "SUCCESS";
-        record.getCardMap().put(targetName, toggled);
-
-        // ✅ 標記技能已用
-        room.getUsedSkillMap().put(playerName, true);
-        roomRepository.save(room);
-
-        return ResponseEntity.ok().build();
-    }
-
     @PostMapping("/skill/commander-check")
     public ResponseEntity<?> useCommanderSkill(@RequestBody Map<String, String> body) {
         String roomId = body.get("roomId");
@@ -934,6 +884,92 @@ public class RoomController {
         ));
     }
 
+@PostMapping("/api/skill/civilian-ultimate")
+public ResponseEntity<?> civilianUltimate(@RequestBody Map<String, Object> body) {
+    String roomId = (String) body.get("roomId");
+    String playerName = (String) body.get("playerName");
+    @SuppressWarnings("unchecked")
+    Map<String, String> guesses = (Map<String, String>) body.get("guesses");
+
+    Room room = getRoomById(roomId).getBody();  // ✅ 修正：因為 getRoomById 回傳 ResponseEntity<Room>
+    if (room == null) {
+        return ResponseEntity.badRequest().body("房間不存在");
+    }
+
+    // ✅ 最後一回合判斷：你的 Room 沒有 totalRounds，用 maxRound 判斷
+    if (room.getCurrentRound() != room.getMaxRound()) {
+    return ResponseEntity.badRequest().body("不是最後一回合，無法使用終極技能");
+}
+
+
+    // ✅ 角色判斷：直接從 assignedRoles 拿 name 判斷
+    Map<String, Room.RoleInfo> roles = room.getAssignedRoles();
+    if (roles == null) roles = Collections.emptyMap();  
+Room.RoleInfo myInfo = roles != null ? roles.get(playerName) : null;
+String myRole = (myInfo != null) ? myInfo.getName() : null;
+    if (myRole == null) {
+        return ResponseEntity.badRequest().body("查無你的角色");
+    }
+    if (!myRole.contains("平民")) {
+        return ResponseEntity.badRequest().body("僅平民可使用終極技能");
+    }
+
+    // ✅ 檢查是否已使用
+    Map<String, Boolean> ultUsed = room.getCivilianUltimateUsed();
+    if (ultUsed != null && Boolean.TRUE.equals(ultUsed.get(playerName))) {
+        return ResponseEntity.badRequest().body("你已經使用過終極技能");
+    }
+
+    // ✅ 檢查每位玩家猜測
+    List<String> players = room.getPlayers();
+    for (String p : players) {
+        if (p.equals(playerName)) continue;
+        String g = guesses.get(p);
+        if (g == null || (!g.equals("good") && !g.equals("evil"))) {
+            return ResponseEntity.badRequest().body("每位玩家都需要選擇陣營");
+        }
+    }
+
+    // ✅ 檢查是否全對
+    boolean allCorrect = true;
+    for (String p : players) {
+        if (p.equals(playerName)) continue;
+       Room.RoleInfo info = roles.get(p);
+String roleName = (info != null) ? info.getName() : null;
+
+// 名稱判斷：含「邪惡」或英文別名 "civilian-bad" 視為邪惡
+boolean isEvilName = roleName != null &&
+        (roleName.contains("邪惡") || roleName.equalsIgnoreCase("civilian-bad"));
+
+String actualFaction = isEvilName ? "evil" : "good";
+        if (!actualFaction.equals(guesses.get(p))) {
+            allCorrect = false;
+            break;
+        }
+    }
+
+    // ✅ 標記已使用
+    if (ultUsed == null) ultUsed = new HashMap<>();
+    ultUsed.put(playerName, true);
+    room.setCivilianUltimateUsed(ultUsed);
+
+    // ✅ 加分：Room 裡目前沒有 goodScore/evilScore，我幫你用 missionResultsExtraScore
+    int bonus = allCorrect ? 1 : 0;
+    if (bonus > 0) {
+        if (myRole.contains("邪惡")) {
+            room.setEvilExtraScore(room.getEvilExtraScore() + 1);
+        } else {
+            room.setGoodExtraScore(room.getGoodExtraScore() + 1);
+        }
+    }
+
+    return ResponseEntity.ok(Map.of(
+            "message", allCorrect ? "✅ 全部猜對！你的陣營 +1 分！" : "❌ 有猜錯，未加分。",
+            "allCorrect", allCorrect,
+            "goodScore", room.getGoodExtraScore(),
+            "evilScore", room.getEvilExtraScore()
+    ));
+}
 
 
 
