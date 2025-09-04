@@ -407,18 +407,31 @@ body > * {
 /* 正面放你原本的卡牌（我們會把你的卡牌 DOM 移進來） */
 .roleflip-front { transform: rotateY(0deg); }
 
-/* 讓背面尺寸與外框完全一致（不鋪整片黑） */
 .roleflip-back{
   position: relative;
   transform: rotateY(180deg);
   display: flex; align-items: center; justify-content: center;
-  /* 內縮量 ≈ 外框厚度，依你的圖微調 16~22px */
-  padding: 18px;
-  background: transparent;      /* 不再整片黑 */
+  /* 移除 padding，避免看起來變小 */
+  padding: 0;
+  background: transparent;
   color: #fff;
   border-radius: inherit;
   overflow: visible;
 }
+
+/* 讓文字區塊自己留白，不影響卡片外觀尺寸 */
+.roleflip-tip{
+  position: relative;
+  z-index: 1;
+  background: rgba(0,0,0,.6);
+  padding: 10px 14px;
+  border-radius: 8px;
+  max-width: calc(100% - 6px);
+  text-align: left;
+  margin: 18px;            /* ← 新增：把原本 back 的 padding 轉移到內容 */
+  box-sizing: border-box;  /* 保守：避免計算誤差 */
+}
+
 
 /* 背面外框：與正面 ::before 同尺寸、同上移量 */
 .roleflip-back::before{
@@ -461,3 +474,118 @@ body > * {
 }
 .roleflip-tip h4{ margin:0 0 6px; font-size:1rem; }
 .roleflip-tip p { margin:0; line-height:1.5; font-size:.95rem; }
+/* ===== 翻面後的大型資訊板（置中） ===== */
+.roleflip-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.55);
+  display: none;                 /* 預設隱藏，翻面時打開 */
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;                /* 蓋過一切 */
+}
+
+.roleflip-overlay.is-open { display: flex; }
+
+.roleflip-panel {
+  width: min(1000px, 92vw);
+  max-height: min(84vh, 800px);
+  background: rgba(20,20,24,.85);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 16px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.45);
+  color: #fff;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  animation: panel-pop 180ms ease-out;
+}
+
+@keyframes panel-pop {
+  from { transform: translateY(6px) scale(.98); opacity: 0; }
+  to   { transform: translateY(0)    scale(1);   opacity: 1; }
+}
+
+.roleflip-panel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255,255,255,.12);
+}
+.roleflip-title {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: .5px;
+}
+.roleflip-close {
+  background: transparent; border: 0; color: #fff; font-size: 22px;
+  cursor: pointer; line-height: 1; padding: 6px 10px; border-radius: 8px;
+}
+.roleflip-close:hover { background: rgba(255,255,255,.08); }
+
+.roleflip-panel-body {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 16px;
+  padding: 16px;
+  overflow: auto;
+}
+
+/* 左欄：卡牌預覽 + 角色介紹 */
+.roleleft {
+  display: grid;
+  grid-template-rows: auto auto;
+  gap: 12px;
+}
+
+.role-card-preview {
+  display: grid; place-items: center;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 12px;
+  padding: 12px;
+}
+.role-card-preview .player-card,
+.role-card-preview .player-self {
+  position: relative;
+  left: auto; top: auto; right: auto; bottom: auto; transform: none;
+  width: 220px; height: 260px;     /* 預覽尺寸 */
+}
+
+.role-intro {
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 12px;
+  padding: 14px 16px;
+  line-height: 1.6;
+  max-height: 200px;       /* 最多顯示 200px */
+  overflow-y: auto;        /* 超出時出現滾動條 */
+  font-size: 15px;
+}
+
+.role-intro h3 { margin: 0 0 8px; font-size: 18px; }
+.role-intro p  { margin: 0; line-height: 1.6; }
+
+/* 右欄：技能效果 + 技能提示 */
+.roleright {
+  display: grid;
+  grid-template-rows: auto auto;
+  gap: 12px;
+}
+.role-section {
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+.role-section h3 { margin: 0 0 8px; font-size: 18px; }
+.role-section ul { margin: 0; padding-left: 20px; }
+.role-section li { margin: 6px 0; line-height: 1.5; }
+
+/* 小螢幕調整 */
+@media (max-width: 900px) {
+  .roleflip-panel-body { grid-template-columns: 1fr; }
+  .role-card-preview .player-card,
+  .role-card-preview .player-self { width: 200px; height: 240px; }
+}
