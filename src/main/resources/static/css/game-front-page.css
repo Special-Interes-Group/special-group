@@ -461,19 +461,6 @@ body > * {
   transform: translateY(-24px) scale(1.05);
   transform-origin:center top;
 }
-
-/* 只讓文字區塊有小黑底，跟著外框內緣，不會超出卡牌 */
-.roleflip-tip{
-  position: relative;
-  z-index:1;
-  background: rgba(0,0,0,.6);
-  padding: 10px 14px;
-  border-radius: 8px;
-  max-width: calc(100% - 6px);
-  text-align:left;
-}
-.roleflip-tip h4{ margin:0 0 6px; font-size:1rem; }
-.roleflip-tip p { margin:0; line-height:1.5; font-size:.95rem; }
 /* ===== 翻面後的大型資訊板（置中） ===== */
 .roleflip-overlay {
   position: fixed;

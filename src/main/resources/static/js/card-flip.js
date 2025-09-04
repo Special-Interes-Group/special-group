@@ -249,14 +249,9 @@
     const front = document.createElement("div");
     front.className = "roleflip-front";
 
-    const back = document.createElement("div");
-    back.className = "roleflip-back";
-    back.innerHTML = `
-      <div class="roleflip-tip">
-        <h4>${tip.title}</h4>
-        <p>${tip.text}</p>
-      </div>
-    `;
+   const back = document.createElement("div");
+back.className = "roleflip-back";
+// 不放小提示框，背面只保留外框效果
 
     // 把 wrapper 放到原位置，並把原卡移進 front
     cardEl.parentNode.insertBefore(wrapper, cardEl);
