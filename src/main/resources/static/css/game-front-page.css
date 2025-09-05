@@ -581,4 +581,54 @@ body > * {
 .top-right { z-index: 1002; }
 .player-circle { z-index: 0; }
 .popup { z-index: 10000; }
+/* 齒輪容器 */
+#user-info-container {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    z-index: 1000;
+}
+
+/* 齒輪圖示 */
+.setting-icon {
+    width: 100px;
+    height: 100px;
+    cursor: pointer;
+}
+
+/* 小視窗樣式 */
+.user-info-popup {
+    position: absolute;
+    top: 70px;
+    right: 20px;
+    min-width: 200px;
+    background-color: #fff;
+    color: #000;
+    border: 1px solid #aaa;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    z-index: 1000;
+    word-wrap: break-word;
+}
+.user-info-popup button {
+    background-color: #ff4d4f;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    font-size: 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-top: 10px;
+}
+
+.user-info-popup button:hover {
+    background-color: #d9363e;
+}
+
+/* 隱藏用 */
+.hidden {
+    display: none;
+}
 

@@ -522,3 +522,43 @@ document.addEventListener("mousemove", (e) => {
     }
   });
 }); // <— 這個 DOMContentLoaded 的大括號與括號一定要有！
+// 登出功能：清除 localStorage 與 sessionStorage 中的 username
+function logout() {
+  sessionStorage.removeItem('username');
+  localStorage.removeItem('username');
+  window.location.href = '/';
+}
+
+// 切換用戶資訊小視窗
+function toggleUserInfoPopup() {
+  const popup = document.getElementById("user-info-popup");
+  popup.classList.toggle("hidden");
+}
+
+// 顯示用戶名稱
+document.addEventListener("DOMContentLoaded", function () {
+  const username = localStorage.getItem("username") || sessionStorage.getItem("username") || "未登入";
+  const usernameDisplay = document.getElementById("username-display");
+  if (usernameDisplay) {
+    usernameDisplay.textContent = username;
+  }
+});
+
+// 音量調整
+document.addEventListener('DOMContentLoaded', () => {
+  const volSlider = document.getElementById('bgm-volume');
+  if (!volSlider) return;
+
+  try {
+    const saved = Number(localStorage.getItem('bgm_volume'));
+    if (!Number.isNaN(saved)) volSlider.value = saved;
+  } catch {}
+
+  volSlider.addEventListener('input', () => {
+    const v = Math.max(0, Math.min(1, volSlider.value / 100));
+    try {
+      window.top.postMessage({ type: 'bgm:setVolume', value: v }, '*');
+      localStorage.setItem('bgm_volume', volSlider.value);
+    } catch {}
+  });
+});
