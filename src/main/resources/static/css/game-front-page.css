@@ -513,6 +513,7 @@ body > * {
 }
 .roleflip-close:hover { background: rgba(255,255,255,.08); }
 
+/* 面板主體：兩欄（左380px / 右自適應） */
 .roleflip-panel-body {
   display: grid;
   grid-template-columns: 380px 1fr;
@@ -521,15 +522,10 @@ body > * {
   overflow: auto;
 }
 
-/* 左欄：卡牌預覽 + 角色介紹 */
-.roleleft {
-  display: grid;
-  grid-template-rows: auto auto;
-  gap: 12px;
-}
-
+/* 左邊只有圖片預覽 */
 .role-card-preview {
-  display: grid; place-items: center;
+  display: grid;
+  place-items: center;
   background: rgba(255,255,255,.06);
   border: 1px solid rgba(255,255,255,.08);
   border-radius: 12px;
@@ -539,45 +535,40 @@ body > * {
 .role-card-preview .player-self {
   position: relative;
   left: auto; top: auto; right: auto; bottom: auto; transform: none;
-  width: 220px; height: 260px;     /* 預覽尺寸 */
+  width: 220px; height: 260px;
 }
 
-.role-intro {
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.08);
-  border-radius: 12px;
-  padding: 14px 16px;
-  line-height: 1.6;
-  max-height: 200px;       /* 最多顯示 200px */
-  overflow-y: auto;        /* 超出時出現滾動條 */
-  font-size: 15px;
-}
-
-.role-intro h3 { margin: 0 0 8px; font-size: 18px; }
-.role-intro p  { margin: 0; line-height: 1.6; }
-
-/* 右欄：技能效果 + 技能提示 */
+/* 右邊三塊：技能效果 → 技能提示 → 角色介紹，用 gap 控距 */
 .roleright {
-  display: grid;
-  grid-template-rows: auto auto;
-  gap: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
+
+/* 區塊外觀（統一，無額外 margin） */
 .role-section {
   background: rgba(255,255,255,.06);
   border: 1px solid rgba(255,255,255,.08);
   border-radius: 12px;
   padding: 12px 14px;
+  margin: 0; /* 重要：避免底部多餘留白，交給 gap 控制 */
 }
+
+/* 角色介紹也用同一套樣式即可；若要字大些，可另外加字體設定 */
+.role-intro { line-height: 1.6; font-size: 13px; }
+
+/* 標題 / 清單 */
 .role-section h3 { margin: 0 0 8px; font-size: 18px; }
 .role-section ul { margin: 0; padding-left: 20px; }
 .role-section li { margin: 6px 0; line-height: 1.5; }
 
-/* 小螢幕調整 */
+/* 小螢幕改為上下堆疊 */
 @media (max-width: 900px) {
   .roleflip-panel-body { grid-template-columns: 1fr; }
   .role-card-preview .player-card,
   .role-card-preview .player-self { width: 200px; height: 240px; }
 }
+
 .top-right { z-index: 1002; }
 .player-circle { z-index: 0; }
 .popup { z-index: 10000; }
@@ -631,4 +622,3 @@ body > * {
 .hidden {
     display: none;
 }
-

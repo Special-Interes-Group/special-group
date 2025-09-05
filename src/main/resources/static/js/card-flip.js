@@ -121,7 +121,7 @@
     "medic": "/images/full-medic.png",
     "saboteur": "/images/full-saboteur.png",
     "shadow": "/images/full-shadow.png",
-    "lurker": "/images/full-lurker.png",
+    "lurker": "/images/11.png",
     "commander": "/images/full-commander.png",
     "civilian-good": "/images/full-civilian-good.png",
     "civilian-bad": "/images/full-civilian-bad.png",
@@ -144,37 +144,43 @@
   }
 
   // 建立置中大型資訊板（並回傳 overlay 節點）
-  function buildOverlay(roleKey, cardEl, tip) {
-    const d = roleDetails[roleKey] || roleDetails["civilian"];
-    const overlay = document.createElement("div");
-    overlay.className = "roleflip-overlay";
-    overlay.innerHTML = `
-      <div class="roleflip-panel" role="dialog" aria-modal="true">
-        <div class="roleflip-panel-header">
-          <div class="roleflip-title">${tip.title}</div>
-          <button class="roleflip-close" aria-label="關閉">×</button>
+function buildOverlay(roleKey, cardEl, tip) {
+  const d = roleDetails[roleKey] || roleDetails["civilian"];
+  const overlay = document.createElement("div");
+  overlay.className = "roleflip-overlay";
+  overlay.innerHTML = `
+    <div class="roleflip-panel" role="dialog" aria-modal="true">
+      <div class="roleflip-panel-header">
+        <div class="roleflip-title">${tip.title}</div>
+        <button class="roleflip-close" aria-label="關閉">×</button>
+      </div>
+
+      <div class="roleflip-panel-body">
+        <!-- 左側：只放圖片 -->
+        <div class="roleleft">
+          <div class="role-card-preview"></div>
         </div>
-        <div class="roleflip-panel-body">
-          <div class="roleleft">
-            <div class="role-card-preview"></div>
-            <div class="role-intro">
-              <h3>角色介紹</h3>
-              <p>${d.intro}</p>
-            </div>
+
+        <!-- 右側：技能效果 → 技能提示 → 角色介紹 -->
+        <div class="roleright">
+          <div class="role-section">
+            <h3>技能效果</h3>
+            <ul>${(d.effects || []).map(s => `<li>${s}</li>`).join("")}</ul>
           </div>
-          <div class="roleright">
-            <div class="role-section">
-              <h3>技能效果</h3>
-              <ul>${(d.effects || []).map(s => `<li>${s}</li>`).join("")}</ul>
-            </div>
-            <div class="role-section">
-              <h3>技能提示</h3>
-              <ul>${(d.tips || []).map(s => `<li>${s}</li>`).join("")}</ul>
-            </div>
+          <div class="role-section">
+            <h3>技能提示</h3>
+            <ul>${(d.tips || []).map(s => `<li>${s}</li>`).join("")}</ul>
+          </div>
+          <div class="role-section role-intro">
+            <h3>角色介紹</h3>
+            <p>${d.intro}</p>
           </div>
         </div>
       </div>
-    `;
+    </div>
+  `;
+ 
+
 
     // 左欄：若有設定職業大圖，優先顯示；否則退回 clone 小卡
     const previewHost = overlay.querySelector(".role-card-preview");
