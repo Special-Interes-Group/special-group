@@ -9,18 +9,11 @@
 
   <style>
     /* 禁止選取語音視窗文字 */
-    #voice-container, #voice-container * {
-      user-select: none;
-    }
+    #voice-container, #voice-container * { user-select: none; }
     /* 專用縮放把手 */
     #voice-resize-handle {
-      position: absolute;
-      right: 0;
-      bottom: 0;
-      width: 16px;
-      height: 16px;
-      cursor: se-resize;
-      background: transparent;
+      position: absolute; right: 0; bottom: 0;
+      width: 16px; height: 16px; cursor: se-resize; background: transparent;
     }
   </style>
 </head>
@@ -28,13 +21,15 @@
   <!-- 左上角：顯示輪數 -->
   <div id="round-label" class="top-left">第 1 輪</div>
 
+  <!-- 右上角：設定齒輪 -->
   <div class="top-right">
-    <img src="/images/setting.png" alt="設定" class="icon" />
+    <img id="settings-btn" src="/images/setting.png" alt="設定" class="icon" />
   </div>
 
+  <!-- 玩家區 -->
   <div class="player-circle" id="player-container"></div>
 
-  <!-- 右下角：以 chat.png 作為「語音聊天室」按鈕 -->
+  <!-- 右下角：語音聊天室按鈕 -->
   <div class="bottom-right">
     <img id="voice-toggle-img" src="/images/chat.png" alt="語音聊天室" class="icon" />
   </div>
@@ -91,9 +86,20 @@
     <div id="voice-resize-handle"></div>
   </div>
 
-  <!-- JS 放這裡，保證 DOM 都建好 -->
-  <script src="/js/game-front-page.js"></script>
-  <!-- 翻牌動畫：放在最後，確保能掃到已建立的卡牌 -->
-  <script src="/js/card-flip.js"></script>
+  <!-- ✅ 設定彈窗（移到所有 script 之前，確保 JS 綁得到） -->
+  <div id="settings-popup" class="popup hidden">
+    <div class="popup-content">
+      <h2>設定</h2>
+      <div class="volume-control">
+        <label for="bgm-volume">音樂音量</label>
+        <input type="range" id="bgm-volume" min="0" max="100" value="60">
+      </div>
+      <button id="settings-close-btn">關閉</button>
+    </div>
+  </div>
+
+ <script src="/js/game-front-page.js" defer></script>
+<script src="/js/card-flip.js" defer></script>
+
 </body>
 </html>

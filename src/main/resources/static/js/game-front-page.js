@@ -496,7 +496,29 @@ document.addEventListener("mousemove", (e) => {
 
   document.getElementById("select-expedition-btn")
     ?.addEventListener("click", openSelectModal);
-
   connectWebSocket();
   await fetchMissionSummary();
-});
+
+  // —— 設定彈窗開關（放在 DOMContentLoaded 內） ——
+  const settingsBtn   = document.getElementById('settings-btn');
+  const settingsPopup = document.getElementById('settings-popup');
+  const settingsClose = document.getElementById('settings-close-btn');
+
+  // 防呆：元素是否都抓到了
+  console.log('[settings] btn:', !!settingsBtn, 'popup:', !!settingsPopup, 'close:', !!settingsClose);
+
+  settingsBtn?.addEventListener('click', () => {
+    settingsPopup?.classList.remove('hidden');
+  });
+
+  settingsClose?.addEventListener('click', () => {
+    settingsPopup?.classList.add('hidden');
+  });
+
+  // 點背景關閉
+  settingsPopup?.addEventListener('click', (e) => {
+    if (e.target.id === 'settings-popup') {
+      settingsPopup.classList.add('hidden');
+    }
+  });
+}); // <— 這個 DOMContentLoaded 的大括號與括號一定要有！
