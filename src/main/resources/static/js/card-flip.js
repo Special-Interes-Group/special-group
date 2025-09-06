@@ -186,7 +186,7 @@ function buildOverlay(roleKey, cardEl, tip) {
     // 左欄：若有設定職業大圖，優先顯示；否則退回 clone 小卡
     const previewHost = overlay.querySelector(".role-card-preview");
    const imgSrc = roleImages[roleKey];
-    if (imgSrc) {
+      if (imgSrc) {
       const previewImg = document.createElement("img");
       previewImg.alt = tip.title;
       previewImg.style.maxWidth = "100%";
@@ -194,15 +194,30 @@ function buildOverlay(roleKey, cardEl, tip) {
       previewImg.style.display = "block";
       previewImg.style.borderRadius = "12px";
 
-      if (roleKey === "lurker") {
-        // 潛伏者用動畫 class
+      // 動畫角色處理
+    if (roleKey === "lurker") {
         previewImg.className = "lurker-anim";
+      } else if (roleKey === "engineer") {
+        previewImg.className = "engineer-anim";
+      } else if (roleKey === "medic") {
+        previewImg.className = "medic-anim";
+      } else if (roleKey === "commander") {
+        previewImg.className = "commander-anim";
+      } else if (roleKey === "civilian-good") {
+        previewImg.className = "civilian-good-anim";
+      } else if (roleKey === "saboteur") {
+        previewImg.className = "saboteur-anim";
+      } else if (roleKey === "civilian-bad") {
+        previewImg.className = "civilian-bad-anim";
+      } else if (roleKey === "shadow") {
+        previewImg.className = "shadow-anim";
       } else {
         previewImg.src = imgSrc;
       }
 
       previewHost.appendChild(previewImg);
     }
+
 
     else {
       const clone = cardEl.cloneNode(true);

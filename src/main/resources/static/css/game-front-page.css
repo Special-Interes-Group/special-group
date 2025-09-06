@@ -646,6 +646,113 @@ body > * {
   display: block;
   animation: lurkerFrames 0.8s steps(1) infinite;  /* 速度更快 */
 }
+/* 工程師動畫 */
+@keyframes engineerFrames {
+  0%     { content: url("/images/21.png"); }
+  16.666%{ content: url("/images/22.png"); }
+  33.333%{ content: url("/images/23.png"); }
+  50%    { content: url("/images/24.png"); }
+  66.666%{ content: url("/images/23.png"); }
+  83.333%{ content: url("/images/22.png"); }
+  100%   { content: url("/images/21.png"); }
+}
+.engineer-anim {
+  width: 220px;
+  height: auto;
+  display: block;
+  animation: engineerFrames 1s steps(1) infinite alternate;
+}
+
+/* 醫護兵動畫 */
+@keyframes medicFrames {
+    0%     { content: url("/images/31.png"); }
+  16.666%{ content: url("/images/32.png"); }
+  33.333%{ content: url("/images/33.png"); }
+  50%    { content: url("/images/34.png"); }
+  66.666%{ content: url("/images/33.png"); }
+  83.333%{ content: url("/images/32.png"); }
+  100%   { content: url("/images/31.png"); }
+}
+.medic-anim {
+  width: 220px;
+  height: auto;
+  display: block;
+  animation: medicFrames 1s steps(1) infinite alternate;
+}
+
+/* 指揮官動畫 */
+@keyframes commanderFrames {
+    0%     { content: url("/images/41.png"); }
+  16.666%{ content: url("/images/42.png"); }
+  33.333%{ content: url("/images/43.png"); }
+  50%    { content: url("/images/44.png"); }
+  66.666%{ content: url("/images/43.png"); }
+  83.333%{ content: url("/images/42.png"); }
+  100%   { content: url("/images/41.png"); }
+}
+.commander-anim {
+  width: 220px;
+  height: auto;
+  display: block;
+  animation: commanderFrames 1s steps(1) infinite alternate;
+}
+
+/* 好平民動畫 */
+@keyframes civilianGoodFrames {
+   0%     { content: url("/images/51.png"); }
+  25%    { content: url("/images/52.png"); }
+  50%    { content: url("/images/53.png"); }
+  75%    { content: url("/images/52.png"); }
+  100%   { content: url("/images/51.png"); }
+}
+.civilian-good-anim {
+  width: 220px;
+  height: auto;
+  display: block;
+  animation: civilianGoodFrames 1s steps(1) infinite alternate;
+}
+
+/* 破壞者動畫 */
+@keyframes saboteurFrames {
+  0%   { content: url("/images/61.png"); }
+  25% { content: url("/images/62.png"); }
+  50%   { content: url("/images/61.png"); }
+  100% { content: url("/images/62.png"); }
+}
+.saboteur-anim {
+  width: 220px;
+  height: auto;
+  display: block;
+  animation: saboteurFrames 1s steps(1) infinite alternate;
+}
+
+/* 壞平民動畫 */
+@keyframes civilianBadFrames {
+  0%   { content: url("/images/71.png"); }
+  25% { content: url("/images/72.png"); }
+  50%   { content: url("/images/71.png"); }
+  100% { content: url("/images/72.png"); }
+}
+.civilian-bad-anim {
+  width: 220px;
+  height: auto;
+  display: block;
+  animation: civilianBadFrames 1s steps(1) infinite alternate;
+}
+
+/* 影武者動畫 */
+@keyframes shadowFrames {
+  0%   { content: url("/images/81.png"); }
+  25% { content: url("/images/82.png"); }
+  50%   { content: url("/images/81.png"); }
+  100% { content: url("/images/82.png"); }
+}
+.shadow-anim {
+  width: 220px;
+  height: auto;
+  display: block;
+  animation: shadowFrames 1s steps(1) infinite alternate;
+}
 
 /* 讓角色介紹橫跨兩欄，延伸到左邊貼邊 */
 .role-section.role-intro {
