@@ -108,42 +108,6 @@ h1{
   text-shadow:0 1px 0 rgba(0,0,0,.55), 0 2px 6px rgba(0,0,0,.28);
 }
 
-/* ================= 投票按鈕 ================= */
-#vote-result p{ margin:8px 0; font-size:20px; color:var(--paper-ink); }
-#vote-buttons{
-  margin-top:-14px;
-  display:flex;
-  justify-content:center;
-  gap:12px;
-}
-#vote-buttons button{
-  padding:10px 24px;
-  font-size:18px;
-  font-weight:600;
-  cursor:pointer;
-  border-radius:10px;
-  border:1px solid rgba(0,0,0,.35);
-  background:var(--paper);
-  mix-blend-mode:multiply;
-  filter:brightness(.92) contrast(.95) sepia(.25);
-  color:var(--paper-ink);
-  text-shadow:0 1px 0 rgba(0,0,0,.5);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.06),
-    0 3px 8px rgba(0,0,0,.35);
-  transition:transform .08s ease, filter .18s ease;
-}
-#vote-buttons button:hover{
-  transform:translateY(-1px) scale(1.01);
-  filter:brightness(.97) contrast(.98) sepia(.25);
-}
-#vote-buttons button.selected{
-  outline:2px solid rgba(236,210,140,.45);
-}
-#agree-btn, #reject-btn, #confirm-btn{
-  background:var(--paper);
-}
-
 /* ================= 右上角計時 ================= */
 #timer{
   position:fixed; top:18px; right:26px; z-index:10;
@@ -157,7 +121,7 @@ h1{
 
 .hidden{ display:none; }
 
-/* 紙面熱區 */
+/* ================= 紙面與版位 ================= */
 #paper-board{
   position: fixed !important;
   margin: 0 !important;
@@ -176,9 +140,7 @@ h1{
 }
 
 /* 頭貼容器絕對定位 */
-#expedition-container{
-  position: absolute;
-}
+#expedition-container{ position: absolute; }
 
 /* 2、3、4 人版統一成單排置中 */
 #paper-board.count-2 #expedition-container,
@@ -212,15 +174,71 @@ h1{
 }
 #paper-board.count-5 .exp-card{ width: clamp(130px, 11.5vw, 200px); }
 
-/* 按鈕位置 */
-#vote-buttons{
+/* ================= 底部容器（避免重疊） ================= */
+/* 只定位這一層；裡面用正常流垂直排，就不會互蓋 */
+#vote-bottom{
   position: absolute;
-  left: 12.021%;
-  top: 90%;
-  width: 75.436%;
-  height: 5.035%;
+  left: 12%;
+  top: 88%;                 /* 覺得太高/太低可微調 86%~90% */
+  width: 76%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;                 /* 元素間距，避免碰撞 */
+}
+
+/* 按鈕列：正常流 */
+#vote-buttons{
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
-#vote-buttons button{ flex: 0 0 28%; }
+#vote-buttons button{
+  flex: 0 0 28%;
+  padding:10px 24px;
+  font-size:18px;
+  font-weight:600;
+  cursor:pointer;
+  border-radius:10px;
+  border:1px solid rgba(0,0,0,.35);
+  background:var(--paper);
+  mix-blend-mode:multiply;
+  filter:brightness(.92) contrast(.95) sepia(.25);
+  color:var(--paper-ink);
+  text-shadow:0 1px 0 rgba(0,0,0,.5);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.06),
+    0 3px 8px rgba(0,0,0,.35);
+  transition:transform .08s ease, filter .18s ease;
+}
+#vote-buttons button:hover{
+  transform:translateY(-1px) scale(1.01);
+  filter:brightness(.97) contrast(.98) sepia(.25);
+}
+#vote-buttons button.selected{ outline:2px solid rgba(236,210,140,.45); }
+#agree-btn, #reject-btn, #confirm-btn{ background:var(--paper); }
+
+/* 結果：正常流 */
+#vote-result{
+  text-align:center;
+}
+#vote-result p{
+  margin: 2px 0 0;
+  font-size: 18px;
+  color: var(--paper-ink);
+}
+
+/* 狀態：正常流（顯示「你已完成投票…」等） */
+#status{
+  margin: 0;
+  font-size: 16px;
+  text-align: center;
+  color: var(--paper-ink);
+  opacity: .95;
+}
+
+/* ================= 可選：不同人數微調底部容器高度 ================= */
+/* 需要微調時再開啟
+#paper-board.count-5 #vote-bottom{ top: 86%; }
+*/

@@ -64,6 +64,11 @@ public class Room {
     private int skillIndex = 0; // 目前輪到第幾位技能角色（索引）
     private int skillRound = 0; // 技能回合編號（從0開始，每回合遞增）
 
+// 潛伏者：技能使用次數（整場限用兩次）
+private Map<String, Integer> lurkerSkillCount = new HashMap<>();
+
+// 潛伏者：本回合使用紀錄（存 "player_R{round}"）
+private Set<String> lurkerUsedThisRound = new HashSet<>();
 
     private Map<String, Integer> missionSuccess = new HashMap<>();
     private Map<String, Integer> missionFail = new HashMap<>();
@@ -307,6 +312,8 @@ public class Room {
     public void setEndTime(LocalDateTime endTime) {
         this.endTime = endTime;
     }
+
+
     // ✅ 若沒有就新增：最後回合上限
 private int maxRound;  // 若你原本叫 totalRounds 或 roundLimit，就把名稱對應起來
 
@@ -328,5 +335,18 @@ public void setGoodExtraScore(int goodExtraScore) { this.goodExtraScore = goodEx
 public int getEvilExtraScore() { return evilExtraScore; }
 public void setEvilExtraScore(int evilExtraScore) { this.evilExtraScore = evilExtraScore; }
 
-    
+    public Map<String, Integer> getLurkerSkillCount() {
+    return lurkerSkillCount;
+}
+public void setLurkerSkillCount(Map<String, Integer> lurkerSkillCount) {
+    this.lurkerSkillCount = lurkerSkillCount;
+}
+
+public Set<String> getLurkerUsedThisRound() {
+    return lurkerUsedThisRound;
+}
+public void setLurkerUsedThisRound(Set<String> lurkerUsedThisRound) {
+    this.lurkerUsedThisRound = lurkerUsedThisRound;
+}
+
 }

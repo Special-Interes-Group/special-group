@@ -12,33 +12,25 @@
   <div id="vote-container">
     <!-- ✅ 右上角計時器 -->
     <div id="timer">剩餘時間：<span id="countdown">15</span> 秒</div>
-
-    <!-- 票數顯示區 -->
-    <div id="vote-result" class="hidden">
-      <p>同意票：<span id="agree-count">0</span></p>
-      <p>反對票：<span id="reject-count">0</span></p>
-    </div>
-
-<div id="paper-board">
-  <!-- 標題放到紙面上 -->
+    <div id="paper-board">
   <h1 id="board-title">投票階段</h1>
-
-  <!-- 頭貼區（2 人版本） -->
   <div id="expedition-container" class="expedition"></div>
 
-  <!-- 按鈕移進紙面上定位 -->
+<div id="vote-bottom">
   <div id="vote-buttons" class="hidden">
     <button id="agree-btn">同意</button>
     <button id="reject-btn">反對</button>
     <button id="confirm-btn">確認</button>
   </div>
-</div>
 
-
-    <!-- 狀態文字 -->
-    <p id="status"></p>
+  <!-- ✅ 票數結果也一起放在按鈕下方（狀態文字下面） -->
+  <div id="vote-result" class="hidden">
+    <p>同意票：<span id="agree-count">0</span></p>
+    <p>反對票：<span id="reject-count">0</span></p>
   </div>
-
+  <!-- ✅ 把狀態文字搬進來，放在按鈕下方 -->
+  <p id="status"></p>
+</div>
   <script src="/js/vote.js" defer></script>
 </body>
 </html>

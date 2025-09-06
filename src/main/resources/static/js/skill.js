@@ -156,18 +156,27 @@ function normalizeRoleKey(name) {
 }
 
 function applyRoleThemeByKey(key) {
+  // 先把 body 上所有 role-* 類別移除
+  document.body.classList.forEach(cls => {
+    if (cls.startsWith('role-')) {
+      document.body.classList.remove(cls);
+    }
+  });
+  // 再加入正確的
   document.body.classList.add(`role-${key}`);
+  console.log("🎨 body class after apply:", document.body.className);
 }
 
-
-// ✅ 相容 {name:'工程師'} / '工程師' / 'engineer'
 async function fetchMyRole() {
   const res = await fetch(`/api/room/${roomId}/roles`);
   const data = await res.json();
   const raw = data.assignedRoles?.[playerName];
+  console.log('🎭 assigned role raw:', raw); // 後端原始 RoleInfo
   const { name, key } = normalizeRole(raw);
+  console.log('👉 normalized to:', { name, key }); // 期望 name=潛伏者 key=lurker
   return { name, key };
 }
+
 
 // ✅ WebSocket 連線 + 技能流程啟動（最終版）
 function connectSkillPhase() {
@@ -192,7 +201,8 @@ function connectSkillPhase() {
       fetch(`/api/room/${roomId}`).then(r => r.json())
     ])
     .then(([state, room]) => {
-      const finalRound = (typeof isFinalRound !== "undefined") ? !!isFinalRound : false;
+      const finalRound = (room.currentRound === room.maxRound-1);
+
 
      // —— 平民 —— //
 if (isCivilianKey(myRoleKey)) {
@@ -227,13 +237,17 @@ if (myRoleKey === "engineer") {
   return;
 }
 
-// 2) 其他職業：判斷是否已使用 / 用盡
 let usedFlag = false;
 switch (myRoleKey) {
-  case "lurker":
+  case "lurker": {
+    const lurkerUsedCount = room.lurkerSkillCount?.[playerName] || 0;
+    usedFlag = lurkerUsedCount >= 1; // ✅ 整場限一次
+    break;
+  }
   case "saboteur":
     usedFlag = !!(room.usedSkillMap?.[playerName]);
     break;
+
   case "medic":
     usedFlag = !!(room.medicSkillUsed?.[playerName]);
     break;

@@ -619,6 +619,52 @@ public class RoomController {
 
         return ResponseEntity.ok().build();
     }
+@PostMapping("/skill/lurker-toggle")
+public ResponseEntity<?> useLurkerSkill(@RequestBody Map<String, String> body) {
+    String roomId     = body.get("roomId");
+    String playerName = body.get("playerName");  // 潛伏者本人
+    String targetName = body.get("targetName");  // 要反轉的對象
+
+    Room room = roomRepository.findById(roomId).orElse(null);
+    if (room == null) return ResponseEntity.notFound().build();
+
+    int round = room.getCurrentRound();
+    MissionRecord record = room.getMissionResults().get(round);
+    if (record == null || record.getCardMap() == null || !record.getCardMap().containsKey(targetName)) {
+        return ResponseEntity.status(400).body("該玩家尚未提交卡片");
+    }
+
+    // ✅ 整場限一次
+    int used = room.getLurkerSkillCount().getOrDefault(playerName, 0);
+    if (used >= 1) {
+        return ResponseEntity.status(403).body("你已經使用過潛伏者技能了");
+    }
+
+    // ✅ 技能被影武者封鎖 → 技能不產生效果，但次數照樣消耗
+    if (roomService.isSkillShadowed(room, playerName)) {
+        room.getLurkerSkillCount().put(playerName, used + 1);
+        roomRepository.save(room);
+        return ResponseEntity.ok(Map.of(
+            "flipped", "（被封鎖，無效果）",
+            "remaining", 0
+        ));
+    }
+
+    // ✅ 反轉卡片
+    String oldCard = record.getCardMap().get(targetName);
+    String newCard = "SUCCESS".equalsIgnoreCase(oldCard) ? "FAIL" : "SUCCESS";
+    record.getCardMap().put(targetName, newCard);
+
+    // ✅ 記錄使用（整場只會到這裡一次）
+    room.getLurkerSkillCount().put(playerName, used + 1);
+    roomRepository.save(room);
+
+    return ResponseEntity.ok(Map.of(
+        "flipped", newCard,
+        "remaining", 0
+    ));
+}
+
 
 
     @PostMapping("/skill/commander-check")
@@ -970,7 +1016,6 @@ String actualFaction = isEvilName ? "evil" : "good";
             "evilScore", room.getEvilExtraScore()
     ));
 }
-
 
 
 }
