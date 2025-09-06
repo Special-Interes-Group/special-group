@@ -535,7 +535,7 @@ body > * {
 .role-card-preview .player-self {
   position: relative;
   left: auto; top: auto; right: auto; bottom: auto; transform: none;
-  width: 220px; height: 260px;
+  width: 280px; height: 400px;
 }
 
 /* 右邊三塊：技能效果 → 技能提示 → 角色介紹，用 gap 控距 */
@@ -621,4 +621,33 @@ body > * {
 /* 隱藏用 */
 .hidden {
     display: none;
+}
+
+/* 潛伏者動畫容器 */
+.lurker-anim {
+  width: 220px;
+  height: auto;
+  display: block;
+}
+
+@keyframes lurkerFrames {
+  0%     { content: url("/images/11.png"); }
+  16.666%{ content: url("/images/12.png"); }
+  33.333%{ content: url("/images/13.png"); }
+  50%    { content: url("/images/14.png"); }
+  66.666%{ content: url("/images/13.png"); }
+  83.333%{ content: url("/images/12.png"); }
+  100%   { content: url("/images/11.png"); }
+}
+
+.lurker-anim {
+  width: 220px;        /* 你的預覽大小 */
+  height: auto;
+  display: block;
+  animation: lurkerFrames 0.8s steps(1) infinite;  /* 速度更快 */
+}
+
+/* 讓角色介紹橫跨兩欄，延伸到左邊貼邊 */
+.role-section.role-intro {
+  grid-column: 1 / -1;   /* ← 橫跨整個 grid，從左邊到右邊 */
 }

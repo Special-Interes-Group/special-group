@@ -143,7 +143,7 @@
     for (const [k, v] of Object.entries(from.dataset)) to.dataset[k] = v; // 複製 data-*
   }
 
-  // 建立置中大型資訊板（並回傳 overlay 節點）
+// 建立置中大型資訊板（並回傳 overlay 節點）
 function buildOverlay(roleKey, cardEl, tip) {
   const d = roleDetails[roleKey] || roleDetails["civilian"];
   const overlay = document.createElement("div");
@@ -161,7 +161,7 @@ function buildOverlay(roleKey, cardEl, tip) {
           <div class="role-card-preview"></div>
         </div>
 
-        <!-- 右側：技能效果 → 技能提示 → 角色介紹 -->
+        <!-- 右側：技能效果 → 技能提示 -->
         <div class="roleright">
           <div class="role-section">
             <h3>技能效果</h3>
@@ -171,30 +171,40 @@ function buildOverlay(roleKey, cardEl, tip) {
             <h3>技能提示</h3>
             <ul>${(d.tips || []).map(s => `<li>${s}</li>`).join("")}</ul>
           </div>
-          <div class="role-section role-intro">
-            <h3>角色介紹</h3>
-            <p>${d.intro}</p>
-          </div>
+        </div>
+
+        <!-- 角色介紹：作為 grid 直屬子元素，橫跨兩欄 -->
+        <div class="role-section role-intro">
+          <h3>角色介紹</h3>
+          <p>${d.intro}</p>
         </div>
       </div>
     </div>
   `;
- 
 
 
     // 左欄：若有設定職業大圖，優先顯示；否則退回 clone 小卡
     const previewHost = overlay.querySelector(".role-card-preview");
-    const imgSrc = roleImages[roleKey];
+   const imgSrc = roleImages[roleKey];
     if (imgSrc) {
       const previewImg = document.createElement("img");
-      previewImg.src = imgSrc;
       previewImg.alt = tip.title;
       previewImg.style.maxWidth = "100%";
       previewImg.style.height = "auto";
       previewImg.style.display = "block";
       previewImg.style.borderRadius = "12px";
+
+      if (roleKey === "lurker") {
+        // 潛伏者用動畫 class
+        previewImg.className = "lurker-anim";
+      } else {
+        previewImg.src = imgSrc;
+      }
+
       previewHost.appendChild(previewImg);
-    } else {
+    }
+
+    else {
       const clone = cardEl.cloneNode(true);
       clone.classList.remove("is-wrapped"); // 清掉包裝痕跡
       clone.style.left = clone.style.top =
