@@ -2,36 +2,45 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>任務選擇階段</title>
+
+  <!-- 樣式 -->
   <link rel="stylesheet" href="/css/mission.css" />
+
+  <!-- WebSocket (SockJS + STOMP) -->
   <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
+  <!-- 互動腳本（延後載入） -->
   <script src="/js/mission.js" defer></script>
 </head>
 <body>
-  <!-- 背景桌面容器：與 mission.css 的 .stage 對應 -->
+  <!-- 背景舞台（木板） -->
   <div class="stage">
-    <!-- 出戰玩家畫面 -->
+
+    <!-- 出戰玩家：任務卡選擇頁 -->
     <div id="mission-choice-panel" class="">
-      <h1>請選擇你的任務卡</h1>
-
-      <!-- 卡片群組：會被定位在桌面中央偏下 -->
-      <div class="btn-group">
-        <!-- 你原本是成功在左、失敗在右，就維持此順序 -->
-        <button id="success-btn" type="button"></button>
-        <button id="fail-btn" type="button"></button>
-      </div>
-
-      <!-- 確認按鈕：定位在更靠下的位置 -->
-      <div class="confirm-group">
-        <button id="confirm-btn" disabled>確認提交</button>
+      <div class="center-panel">
+        <div class="btn-group">
+          <button id="success-btn" type="button" aria-label="選擇成功卡"></button>
+          <button id="fail-btn" type="button" aria-label="選擇失敗卡"></button>
+        </div>
+        <div class="confirm-group">
+          <button id="confirm-btn" disabled>確認提交</button>
+        </div>
       </div>
     </div>
 
-    <!-- 非出戰玩家 or 已交卡者 -->
-    <div id="waiting-panel" class="hidden">
-      <h1>等待其他玩家提交任務卡...</h1>
-    </div>
-  </div>
-</body>
-</html>
+    <!-- 非出戰玩家或已提交者：等待頁（動圖 + 紙條都在中間框內） -->
+    <div id="waiting-panel" class="hidden waiting-layer">
+      <div class="waiting-stack">
+        <!-- 自己的角色動圖（依 data-role 顯示動畫） -->
+        <div id="role-wait-anim" class="role-anim" data-role="" aria-label="角色等待動畫"></div>
+
+        <!-- 紙條（與動圖同一堆疊、置中顯示） -->
+        <div id="paper-note" class="paper-note hidden" role="note" aria-live="polite">
+          <div class="paper-pin"></div>
+          <div class="paper-content" id="paper-content">……</div>
+        </div>
+      </div>

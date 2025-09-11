@@ -5,9 +5,52 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>末日地下城對抗</title>
   <link rel="stylesheet" href="/css/styles.css" />
-  
+  <style>
+    /* —— 右上角齒輪與彈窗（保持和遊戲介面一致） —— */
+    .setting-icon {
+      width: 100px;   /* ✅ 和 game-front-page 一樣大小 */
+      height: 100px;
+      cursor: pointer;
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 999;
+    }
+    .user-info-popup {
+      position: absolute;
+      top: 70px; /* 微調，避免擋到齒輪 */
+      right: 20px;
+      background: #ffffff;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 12px 14px;
+      z-index: 1000;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      width: 220px;
+    }
+    .user-info-popup.hidden { display: none; }
+    .volume-control {
+      display: grid;
+      gap: 8px;
+      font-size: 14px;
+    }
+    .volume-control input[type="range"] {
+      width: 100%;
+    }
+  </style>
 </head>
 <body>
+  <!-- 右上角齒輪（未登入版：只有音量調整） -->
+  <div id="user-info-container">
+    <img src="/images/setting.png" alt="設定" class="setting-icon" onclick="toggleUserInfoPopup()">
+  </div>
+  <div id="user-info-popup" class="user-info-popup hidden">
+    <div class="volume-control">
+      <label for="bgm-volume">音樂音量</label>
+      <input type="range" id="bgm-volume" min="0" max="100" value="60">
+    </div>
+  </div>
+
   <div class="container">
     <img src="/images/title3.png" alt="末日地下城對抗" id="title" />
     <div class="button-container" id="menu">
@@ -19,24 +62,40 @@
   </div>
 
   <script>
-    // 若使用者直接打 /index 進來（不是在外殼 iframe 裡），導到外殼並指定回到本頁
     if (window.top === window.self) {
-      // 把目標頁帶在 hash：外殼會讀取並導到 iframe
       window.location.replace('/bgm-shell.html#' + encodeURIComponent('/index'));
     }
 
-    // 一次性保險：第一次任意點擊就要求外殼播放 BGM（不影響導頁）
     document.addEventListener('pointerdown', () => {
       try { window.top.postMessage({ type: 'bgm:play' }, '*'); } catch {}
     }, { once: true });
 
-    // 你也可以在第一次按鍵時觸發（例如用鍵盤操作）
     document.addEventListener('keydown', () => {
       try { window.top.postMessage({ type: 'bgm:play' }, '*'); } catch {}
     }, { once: true });
 
-    // 若你要做音量面板，可這樣告訴外殼：
-    // window.top.postMessage({ type: 'bgm:setVolume', value: 0.6 }, '*'); // 0~1
+    function toggleUserInfoPopup() {
+      const popup = document.getElementById("user-info-popup");
+      popup.classList.toggle("hidden");
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const volSlider = document.getElementById('bgm-volume');
+      if (!volSlider) return;
+
+      try {
+        const saved = Number(localStorage.getItem('bgm_volume'));
+        if (!Number.isNaN(saved)) volSlider.value = saved;
+      } catch {}
+
+      volSlider.addEventListener('input', () => {
+        const v = Math.max(0, Math.min(1, volSlider.value / 100));
+        try {
+          window.top.postMessage({ type: 'bgm:setVolume', value: v }, '*');
+          localStorage.setItem('bgm_volume', volSlider.value);
+        } catch {}
+      });
+    });
   </script>
 </body>
 </html>
