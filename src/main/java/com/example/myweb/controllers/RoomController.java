@@ -978,21 +978,29 @@ String myRole = (myInfo != null) ? myInfo.getName() : null;
 
     // ✅ 檢查是否全對
     boolean allCorrect = true;
+    if (roles != null) {  // 先檢查 roles 是否為 null
     for (String p : players) {
         if (p.equals(playerName)) continue;
-       Room.RoleInfo info = roles.get(p);
-String roleName = (info != null) ? info.getName() : null;
 
-// 名稱判斷：含「邪惡」或英文別名 "civilian-bad" 視為邪惡
-boolean isEvilName = roleName != null &&
-        (roleName.contains("邪惡") || roleName.equalsIgnoreCase("civilian-bad"));
+        Room.RoleInfo info = roles.get(p);
+        String roleName = (info != null) ? info.getName() : null;
 
-String actualFaction = isEvilName ? "evil" : "good";
+        // 名稱判斷：含「邪惡」或英文別名 "civilian-bad" 視為邪惡
+        boolean isEvilName = roleName != null &&
+                (roleName.contains("邪惡") || roleName.equalsIgnoreCase("civilian-bad"));
+
+        String actualFaction = isEvilName ? "evil" : "good";
+
         if (!actualFaction.equals(guesses.get(p))) {
             allCorrect = false;
             break;
         }
     }
+} else {
+    // 如果 roles 本身就是 null，可以視情況要不要直接判斷失敗
+    allCorrect = false;
+}
+
 
     // ✅ 標記已使用
     if (ultUsed == null) ultUsed = new HashMap<>();
