@@ -1,131 +1,43 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>房間頁面</title>
-  <link rel="stylesheet" href="/css/room.css">
-  <style>
-    .container { max-width: 800px; margin: 20px auto; padding: 20px; }
-    .header, .players-list, .footer { margin-bottom: 20px; }
-    .start-btn.active { background-color: #28a745; cursor: pointer; }
-    .start-btn:disabled { background-color: #ccc; cursor: not-allowed; }
-  </style>
+  <link rel="stylesheet" href="/css/room.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Uncial+Antiqua&display=swap" rel="stylesheet" />
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <h1 class="room-name" id="room-name">房間名稱</h1>
-      <span class="room-password" id="room-password"></span>
+  <div class="room-wrap">
+    <!-- 木牌 -->
+    <div id="sign">
+      <div class="sign-text">
+        <div class="room-id" id="roomId"></div>
+        <div class="host" id="host"></div>
+      </div>
     </div>
-    <div class="players-list">
-      <h3>已加入玩家：</h3>
-      <ul id="player-list"></ul>
-    </div>
+
+    <!-- 10 面旗子槽位 -->
+    <div class="banner-slot" id="slot-0"></div>
+    <div class="banner-slot" id="slot-1"></div>
+    <div class="banner-slot" id="slot-2"></div>
+    <div class="banner-slot" id="slot-3"></div>
+    <div class="banner-slot" id="slot-4"></div>
+    <div class="banner-slot" id="slot-5"></div>
+    <div class="banner-slot" id="slot-6"></div>
+    <div class="banner-slot" id="slot-7"></div>
+    <div class="banner-slot" id="slot-8"></div>
+    <div class="banner-slot" id="slot-9"></div>
+
+    <!-- 底部按鈕 -->
     <div class="footer">
       <button id="start-game-btn" class="start-btn" disabled>開始遊戲</button>
       <button id="exit-room-btn" class="exit-btn">退出房間</button>
     </div>
   </div>
 
-  <!-- SockJS & STOMP -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
-
-  <script>
-    console.log("room.js loaded");
-    let pollingInterval = null;
-    let currentPlayers = [];
-    let stompClient = null;
-    const roomId = window.location.pathname.split("/").pop();
-
-    document.addEventListener("DOMContentLoaded", () => {
-      loadRoomData();
-      setupExitRoomButton();
-      document.getElementById("start-game-btn")
-              .addEventListener("click", startGame);
-      pollingInterval = setInterval(loadRoomData, 3000);
-      connectWebSocket();
-
-      
-      
-    });
-
-    async function loadRoomData() {
-      console.log("Polling room data for roomId:", roomId);
-      try {
-        const res = await fetch(`/api/room/${roomId}`, { cache: "no-cache" });
-        if (!res.ok) throw new Error();
-        const room = await res.json();
-
-        document.getElementById("room-name").textContent = room.roomName;
-        const pwdEl = document.getElementById("room-password");
-        if (room.roomPassword) {
-          pwdEl.textContent = `密碼：${room.roomPassword}`;
-          pwdEl.style.display = "block";
-        } else {
-          pwdEl.style.display = "none";
-        }
-
-        const players = room.players || [];
-        currentPlayers = players;
-        document.getElementById("player-list").innerHTML =
-          players.map((p,i) => `<li>玩家 ${i+1}: ${p || "等待加入"}</li>`).join("");
-
-        const startBtn = document.getElementById("start-game-btn");
-        const me = sessionStorage.getItem("playerName");
-        if (players.length >= room.playerCount && me === players[0]) {
-          startBtn.disabled = false;
-          startBtn.classList.add("active");
-        } else {
-          startBtn.disabled = true;
-          startBtn.classList.remove("active");
-        }
-      } catch (e) {
-        console.error("加載房間資料失敗:", e);
-      }
-    }
-
-    function setupExitRoomButton() {
-      document.getElementById("exit-room-btn").addEventListener("click", async () => {
-        clearInterval(pollingInterval);
-        const playerName = sessionStorage.getItem("playerName");
-        if (playerName) {
-          await fetch(
-            `/api/exit-room?roomId=${roomId}&playerName=${encodeURIComponent(playerName)}`,
-            { method: "POST" }
-          );
-        }
-        window.location.href = "/game-lobby";
-      });
-    }
-
-    function startGame() {
-      const me = sessionStorage.getItem("playerName");
-      if (!currentPlayers.length || me !== currentPlayers[0]) {
-        return alert("只有房主可以開始遊戲！");
-      }
-      fetch(`/api/start-game?roomId=${roomId}&playerName=${encodeURIComponent(me)}`, {
-        method: "POST"
-      });
-      clearInterval(pollingInterval);
-      // 不立即跳轉，等 WebSocket 廣播觸發
-    }
-
-    function connectWebSocket() {
-      const socket = new SockJS('/ws');
-      stompClient = Stomp.over(socket);
-      stompClient.connect({}, frame => {
-        console.log("WebSocket connected:", frame);
-        stompClient.subscribe(`/topic/room/${roomId}`, msg => {
-          if (msg.body.trim() === "startGame") {
-            window.location.href = `/game-start/${roomId}`;
-          }
-        });
-      }, err => {
-        console.error("WebSocket 錯誤:", err);
-      });
-    }
-  </script>
+  <script src="/js/room.js"></script>
 </body>
 </html>
