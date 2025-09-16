@@ -1,0 +1,6 @@
+kube-prometheus-stack:
+  prometheus:
+    prometheusSpec:
+      additionalScrapeConfigs:
+        name: render-scrape
+        key: prometheus-additional.yaml
