@@ -1,35 +1,37 @@
 package com.example.myweb.controllers;
 
 import com.example.myweb.models.User;
+import com.example.myweb.repositories.UserRepository;
 import com.example.myweb.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
-
-// 標註這是一個 Spring Controller 類別（用於處理 HTTP 請求）
 @Controller
 public class AuthController {
 
-    // 自動注入 UserService（處理註冊、登入邏輯）
     @Autowired
     private UserService userService;
 
-    // 處理 POST 請求，註冊用戶
+    @Autowired
+    private UserRepository userRepository;
+
+    // ================= 註冊 =================
     @PostMapping("/auth/do-register")
-    @ResponseBody  // 表示回傳的是 JSON，而不是頁面
+    @ResponseBody
     public Map<String, Object> register(@RequestBody User user) {
         String username = user.getUsername();
         String password = user.getPassword();
 
-        // 呼叫服務層註冊方法
         boolean success = userService.register(username, password);
 
-        // 回傳結果封裝成 Map（可自動轉為 JSON）
         Map<String, Object> response = new HashMap<>();
         if (success) {
             response.put("success", true);
@@ -41,14 +43,13 @@ public class AuthController {
         return response;
     }
 
-    // 處理 POST 請求，登入用戶
+    // ================= 登入 =================
     @PostMapping("/auth/do-login")
     @ResponseBody
     public Map<String, Object> login(@RequestBody User user) {
         String username = user.getUsername();
         String password = user.getPassword();
 
-        // 呼叫服務層登入方法
         boolean success = userService.login(username, password);
 
         Map<String, Object> response = new HashMap<>();
@@ -62,13 +63,58 @@ public class AuthController {
         return response;
     }
 
-    // 處理 GET 請求，登出使用者
+    // ================= 登出 =================
     @GetMapping("/logout")
     public String logout(HttpServletRequest request) {
-        // 使當前 session 無效，達到登出效果
         request.getSession().invalidate();
-
-        // 登出後重新導向回首頁
         return "redirect:/";
+    }
+
+    // ================= 忘記密碼：取得提示 =================
+    @GetMapping("/auth/password-hint")
+    @ResponseBody
+    public ResponseEntity<?> getPasswordHint(@RequestParam String username) {
+        Optional<User> userOpt = userRepository.findByUsername(username);
+
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+
+        String password = userOpt.get().getPassword();
+        String hint = maskPassword(password);
+        return ResponseEntity.ok(Map.of("hint", hint));
+    }
+
+    // ================= 忘記密碼：修改密碼 =================
+    @PostMapping("/auth/change-password")
+    @ResponseBody
+    public ResponseEntity<?> changePassword(@RequestBody Map<String, String> payload) {
+        String username = payload.get("username");
+        String newPassword = payload.get("newPassword");
+
+        if (username == null || newPassword == null) {
+            return ResponseEntity.badRequest().body("Missing parameters");
+        }
+
+        Optional<User> userOpt = userRepository.findByUsername(username);
+
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+
+        User user = userOpt.get();
+        user.setPassword(newPassword); // ⚠️ 這裡目前是明文，如果之後加密要修改
+        userRepository.save(user);
+
+        return ResponseEntity.ok(Map.of("message", "Password updated successfully"));
+    }
+
+    // 工具方法：遮蔽密碼 (僅保留首尾字元，中間換成 *)
+    private String maskPassword(String password) {
+        if (password == null || password.length() <= 2) {
+            return "*".repeat(password.length());
+        }
+        int stars = password.length() - 2;
+        return password.charAt(0) + "*".repeat(stars) + password.charAt(password.length() - 1);
     }
 }

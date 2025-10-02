@@ -103,6 +103,10 @@ public class HomeController {
     public String gameRecordsPage() {
         return "redirect:/game-records.html";
     }
+    @GetMapping("/forgot-password")
+    public String forgotPasswordPage() {
+        return "forgot-password"; // 會對應到 templates/forgot-password.html
+    }
 
 
 

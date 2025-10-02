@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", () => {
   loadRoomList();
   document.getElementById("room-search")
           .addEventListener("input", filterRooms);
+  setInterval(loadRoomList, 1000);
 });
 
 let allRooms = [];
