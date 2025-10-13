@@ -4,42 +4,30 @@
   <meta charset="UTF-8">
   <title>遊戲結束</title>
   <link rel="stylesheet" href="/css/game-end.css" />
-  <style>
-    body {
-      font-family: "Noto Sans TC", sans-serif;
-      background-color: #f9f9f9;
-      text-align: center;
-      padding: 100px 20px;
-    }
-    h1 {
-      font-size: 48px;
-      margin-bottom: 20px;
-      color: #2c3e50;
-    }
-    #result-message {
-      font-size: 28px;
-      margin: 20px 0;
-      color: #16a085;
-    }
-    .btn {
-      font-size: 20px;
-      padding: 10px 25px;
-      background-color: #3498db;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      text-decoration: none;
-    }
-    .btn:hover {
-      background-color: #2980b9;
-    }
-  </style>
 </head>
+
 <body>
-  <h1>🎉 遊戲結束！</h1>
-  <div id="result-message">載入中...</div>
-  <a href="/game-lobby" class="btn">返回大廳</a>
+  <!-- 壞人：移到左邊 -->
+  <div class="character-container left">
+    <img id="bad-guys-img" src="/images/Bad_Lose1.png" alt="壞人角色">
+  </div>
+
+  <div class="main-content">
+    <div class="battle-summary">
+      <img src="/images/trophy-board.png" alt="獎盃木牌" class="trophy-board" />
+      <div class="summary-text">
+        <div id="faction-resources">正方：--  
+反方：--</div>
+        <div id="winner">勝利方：--</div>
+      </div>
+    </div>
+    <a href="/game-lobby" class="btn">返回大廳</a>
+  </div>
+
+  <!-- 好人：移到右邊 -->
+  <div class="character-container right">
+    <img id="good-guys-img" src="/images/Good_Lose1.png" alt="好人角色">
+  </div>
 
   <script src="/js/game-end.js"></script>
 </body>
