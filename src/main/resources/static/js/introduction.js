@@ -1,13 +1,13 @@
 // 角色資訊列表
 const characters = [
-    { img: "/images/goodpeople1.png", info: " 工程師<br>可檢查一位玩家的資源卡<br>確認其為成功或失敗。" },
-    { img: "/images/goodpeople2.png", info: " 醫護兵<br>可保護一名玩家<br>使其不受道具或事件影響。" },
-    { img: "/images/goodpeople3.png", info: " 指揮官<br>可更換探索隊伍成員<br>但不能連續選擇相同的人。" },
+    { img: "/images/goodpeople1.png", info: " 偵查者<br>每回合開始時可以查看成功跟失敗各自的數量<br>(本技能可以每回合使用)。" },
+    { img: "/images/goodpeople2.png", info: " 醫護兵<br>指定一名玩家保護<br>被保護者下一回合不受邪惡方的技能影響<br>若保護到好人成功數+1,反之保護到壞人成功-1<br>(本技能可以使用一次)" },
+    { img: "/images/goodpeople3.png", info: " 指揮官<br>可以檢查他人的陣營是正義還是邪惡<br>影武者被查到時會是正義方<br>(本技能可以使用兩次)" },
     { img: "/images/goodpeople4.png", info: " 普通倖存者<br>無特殊能力<br>透過推理與投票影響遊戲。" },
-    { img: "/images/badpeople1.png", info: " 潛伏者<br>可偷偷更改提交的資源卡。" },
-    { img: "/images/badpeople2.png", info: " 破壞者<br>可使一張資源卡失效<br>限用兩次。" },
-    { img: "/images/badpeople3.png", info: " 影武者<br>可偽裝身份並並展示假身份。" },
-    { img: "/images/goodpeople4.png", info: " 邪惡平民<br>無特殊能力<br>但可協助邪惡方勝利。" }
+    { img: "/images/badpeople1.png", info: " 潛伏者<br>可以在提交資源卡時決定替換一張卡片的屬性<br>成功卡變為失敗卡,失敗卡變為成功卡<br>(本技能可以使用一次)<br>若與潛伏者在同回合對同張卡發動技能<br>以破壞者優先" },
+    { img: "/images/badpeople2.png", info: " 破壞者<br> 可選擇一張提交的成功卡或失敗卡使其失效<br>(本技能可以使用兩次)<br>若與潛伏者在同回合對同張卡發動技能<br>以破壞者優先" },
+    { img: "/images/badpeople3.png", info: " 影武者<br>指定某玩家下一回合發動的技能失效<br>(本技能可以使用兩次)<br>被指揮官查到時會是正義方" },
+    { img: "/images/badpeople4.png", info: " 邪惡平民<br>無特殊能力<br>但可協助邪惡方勝利。" }
 ];
 
 // ✅ 確保變數先定義，避免 `window.onload` 時 `currentIndex` 未定義

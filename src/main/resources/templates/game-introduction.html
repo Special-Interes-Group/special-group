@@ -4,31 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/css/playrole.css">
+    <link rel="stylesheet" href="/css/game-introduction.css">
     <title>玩法介紹</title>
-    
 </head>
 <body>
-    
-    <div class="container">
-        <h1>末日地下城對抗 - 玩法介紹</h1>
-        <p>在末日降臨後，地表不再適合生存，倖存者們轉移至地下城。然而，內部出現了試圖摧毀能源的叛徒！玩家將分為「地表倖存者」(正義方) 和「內城叛徒」(邪惡方)，透過任務執行、推理與謀略決定地下城的命運。</p>
-        <h2>遊戲目標</h2>
-        <p><strong>正義方勝利：</strong> 成功執行一定數量的任務，確保地下城能源存續。</p>
-        <p><strong>邪惡方勝利：</strong> 阻止任務完成，使能源崩潰。</p>
-        <h2>遊戲流程</h2>
-        <ul>
-            <li>抽取角色卡並秘密保持身份</li>
-            <li>領袖選擇探索隊伍，隊員提交資源卡</li>
-            <li>執行角色技能、道具與投票機制</li>
-            <li>判定任務結果，依據成功卡數決定勝負</li>
-        </ul>
-        <h2>遊戲規則</h2>
-        <ul>
-            <li>地表倖存者：需合作完成任務，並找出叛徒。</li>
-            <li>內城叛徒：偽裝成倖存者，破壞任務並混淆視聽。</li>
-            <li>任務結果：成功卡數大於失敗卡數即為成功。</li>
-    </div>
+    <!-- 左上角返回按鈕 -->
     <button onclick="location.href='/about'" class="back-btn">返回上頁</button>       
-    
+
+    <!-- 圖片切換區域 -->
+    <div class="slider-container">
+        <img src="/images/f2.png" class="arrow left" id="prevBtn" alt="上一頁">
+        <img src="/images/f1.png" class="arrow right" id="nextBtn" alt="下一頁">
+
+        <img src="/images/g1.png" class="slide" style="display:block;">
+        <img src="/images/g2.png" class="slide">
+        <img src="/images/g3.png" class="slide">
+        <img src="/images/g4.png" class="slide">
+    </div>
+
+    <script>
+        const slides = document.querySelectorAll(".slide");
+        let current = 0;
+
+        function showSlide(index) {
+            slides.forEach(slide => slide.style.display = "none");
+            slides[index].style.display = "block";
+        }
+
+        document.getElementById("nextBtn").addEventListener("click", () => {
+            current = (current + 1) % slides.length; // 循環切換
+            showSlide(current);
+        });
+
+        document.getElementById("prevBtn").addEventListener("click", () => {
+            current = (current - 1 + slides.length) % slides.length; // 循環切換
+            showSlide(current);
+        });
+    </script>
 </body>
 </html>
