@@ -71,11 +71,33 @@ function renderTable(records, playerName) {
     resultTd.textContent = record.result;
     tr.appendChild(resultTd);
 
-    // 我的結果
+    // 我的結果（改良版）
     const myResultTd = document.createElement("td");
-    myResultTd.textContent = record.playerResults[playerName] || "-";
-    tr.appendChild(myResultTd);
+    let result = record.playerResults[playerName];
 
+    try {
+      if (typeof result === "string") result = JSON.parse(result);
+    } catch {}
+
+    if (result && typeof result === "object") {
+      const img = document.createElement("img");
+      img.src = result.avatar;
+      img.alt = result.role;
+      img.style.width = "40px";
+      img.style.height = "40px";
+      img.style.verticalAlign = "middle";
+      img.style.marginRight = "6px";
+
+      const span = document.createElement("span");
+      span.textContent = `${result.role}｜${result.outcome}`;
+
+      myResultTd.appendChild(img);
+      myResultTd.appendChild(span);
+    } else {
+      myResultTd.textContent = "-";
+    }
+
+    tr.appendChild(myResultTd);
     tbody.appendChild(tr);
   });
 }
