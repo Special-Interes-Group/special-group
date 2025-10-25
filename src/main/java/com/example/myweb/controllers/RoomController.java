@@ -234,7 +234,7 @@ public class RoomController {
         switch (players.size()) {
             case 5:
                 roles = Arrays.asList(
-                    new Room.RoleInfo("工程師",      "goodpeople1.png"),
+                    new Room.RoleInfo("偵查官",      "goodpeople1.png"),
                     new Room.RoleInfo("普通倖存者", "goodpeople4.png"),
                     new Room.RoleInfo("普通倖存者", "goodpeople4.png"),
                     new Room.RoleInfo("潛伏者",     "badpeople1.png"),
@@ -244,7 +244,7 @@ public class RoomController {
             case 6 :
                 roles = Arrays.asList(
                     new Room.RoleInfo("指揮官",     "goodpeople3.png"),
-                    new Room.RoleInfo("工程師",     "goodpeople1.png"),
+                    new Room.RoleInfo("偵查官",     "goodpeople1.png"),
                     new Room.RoleInfo("普通倖存者","goodpeople4.png"),
                     new Room.RoleInfo("破壞者","badpeople2.png"),
                     new Room.RoleInfo("潛伏者",     "badpeople1.png"),
@@ -254,7 +254,7 @@ public class RoomController {
             case 7:
                 roles = Arrays.asList(
                     new Room.RoleInfo("指揮官",     "goodpeople3.png"),
-                    new Room.RoleInfo("工程師",     "goodpeople1.png"),
+                    new Room.RoleInfo("偵查官",     "goodpeople1.png"),
                     new Room.RoleInfo("醫護兵",     "goodpeople2.png"),
                     new Room.RoleInfo("普通倖存者","goodpeople4.png"),
                     new Room.RoleInfo("潛伏者",     "badpeople1.png"),
@@ -265,7 +265,7 @@ public class RoomController {
             case 8:
                 roles = Arrays.asList(
                     new Room.RoleInfo("指揮官",     "goodpeople3.png"),
-                    new Room.RoleInfo("工程師",     "goodpeople1.png"),
+                    new Room.RoleInfo("偵查官",     "goodpeople1.png"),
                     new Room.RoleInfo("醫護兵",     "goodpeople2.png"),
                     new Room.RoleInfo("普通倖存者","goodpeople4.png"),
                     new Room.RoleInfo("普通倖存者","goodpeople4.png"),
@@ -278,7 +278,7 @@ public class RoomController {
             case 9:
                 roles = Arrays.asList(
                     new Room.RoleInfo("指揮官",     "goodpeople3.png"),
-                    new Room.RoleInfo("工程師",     "goodpeople1.png"),
+                    new Room.RoleInfo("偵查官",     "goodpeople1.png"),
                     new Room.RoleInfo("醫護兵",     "goodpeople2.png"),
                     new Room.RoleInfo("普通倖存者","goodpeople4.png"),
                     new Room.RoleInfo("普通倖存者","goodpeople4.png"),
@@ -291,7 +291,7 @@ public class RoomController {
             case 10:
                 roles = Arrays.asList(
                     new Room.RoleInfo("指揮官",     "goodpeople3.png"),
-                    new Room.RoleInfo("工程師",     "goodpeople1.png"),
+                    new Room.RoleInfo("偵查官",     "goodpeople1.png"),
                     new Room.RoleInfo("醫護兵",     "goodpeople2.png"),
                     new Room.RoleInfo("普通倖存者","goodpeople4.png"),
                     new Room.RoleInfo("普通倖存者","goodpeople4.png"),
@@ -537,9 +537,9 @@ public class RoomController {
                 remainingRoles.add(role); // 一律加進去
             }
 
-            // 若角色為工程師 且 被封鎖，則加入 blockedRoles
-            if ("工程師".equals(role) && disabledPlayers.contains(player)) {
-                blockedRoles.add("工程師");
+            // 若角色為偵查官 且 被封鎖，則加入 blockedRoles
+            if ("偵查官".equals(role) && disabledPlayers.contains(player)) {
+                blockedRoles.add("偵查官");
             }
         }
 
@@ -553,7 +553,7 @@ public class RoomController {
 
     // 角色是否為技能角色
     private boolean isSkillRole(String role) {
-        return Set.of("潛伏者", "影武者", "破壞者", "工程師", "指揮官", "醫護兵").contains(role);
+        return Set.of("潛伏者", "影武者", "破壞者", "偵查官", "指揮官", "醫護兵").contains(role);
     }
 
 
@@ -586,7 +586,7 @@ public class RoomController {
             String roleName = roleInfo != null ? roleInfo.getName() : "";
 
             boolean isGood = switch (roleName) {
-                case "指揮官", "工程師", "醫護兵", "普通倖存者" -> true;
+                case "指揮官", "偵查官", "醫護兵", "普通倖存者" -> true;
                 default -> false;
             };
 
@@ -718,7 +718,7 @@ public ResponseEntity<?> useLurkerSkill(@RequestBody Map<String, String> body) {
 
         String roleName = roleInfo.getName();
         String faction = switch (roleName) {
-            case "工程師", "醫護兵", "指揮官", "普通倖存者", "影武者" -> "正義";
+            case "偵查官", "醫護兵", "指揮官", "普通倖存者", "影武者" -> "正義";
             case "潛伏者", "破壞者", "邪惡平民" -> "邪惡";
             default -> "未知";
         };
@@ -885,7 +885,7 @@ public ResponseEntity<?> useLurkerSkill(@RequestBody Map<String, String> body) {
 
         // 好人陣營角色清單
         Set<String> goodRoles = Set.of(
-            "普通倖存者", "工程師", "指揮官", "醫護兵"
+            "普通倖存者", "偵查官", "指揮官", "醫護兵"
         );
 
         Map<String, String> playerResults = new HashMap<>();

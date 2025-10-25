@@ -74,7 +74,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 // —— 角色中英對照 —— //
 const ROLE_CN_TO_KEY = {
-  '工程師': 'engineer',
+  '偵查官': 'engineer',
   '醫護兵': 'medic',
   '破壞者': 'saboteur',
   '影武者': 'shadow',
@@ -116,7 +116,7 @@ function immersiveMessage(roleName) {
   }
   // 其他職業（可依世界觀再細修）
   switch (roleName) {
-    case "工程師":  return "你正在校準儀表與管線，等待系統指示。";
+    case "偵查官":  return "你正在校準儀表與管線，等待系統指示。";
     case "醫護兵":  return "你在整理醫療包與繃帶，靜候下一個訊號。";
     case "破壞者":  return "你在擦拭工具，默數倒計時的每一刻。";
     case "潛伏者":  return "你貼近牆角，呼吸如絲，等待破綻。";
@@ -142,7 +142,7 @@ function showImmersiveForRole(roleName) {
 // ⭐ 新增：角色名稱轉換 + 套用背景
 function normalizeRoleKey(name) {
   const map = {
-    '工程師':  'engineer',
+    '偵查官':  'engineer',
     '醫護兵':  'medic',
     '破壞者':  'saboteur',
     '影武者':  'shadow',
@@ -228,7 +228,7 @@ if (isCivilianKey(myRoleKey)) {
 const waitingEl    = document.getElementById("waiting-panel");
 const skillPanelEl = document.getElementById("my-skill-panel");
 
-// 1) 工程師：永遠顯示
+// 1) 偵查官：永遠顯示
 if (myRoleKey === "engineer") {
   waitingEl?.classList.add("hidden");
   skillPanelEl?.classList.remove("hidden");
@@ -289,7 +289,7 @@ switch (myRoleKey) {
 }       // ← 關閉 connectSkillPhase 函式
 
   
-// ✅ 工程師
+// ✅ 偵查官
 async function showEngineerResult() {
   try {
     const [roomRes, stateRes] = await Promise.all([
@@ -306,7 +306,7 @@ const blockedKeys  = blockedRoles.map(r => normalizeRole(r).key).filter(Boolean)
 
 engineerPanel.classList.remove("hidden");
 
-// ✅ 若工程師被封鎖（中/英 都相容）
+// ✅ 若偵查官被封鎖（中/英 都相容）
 if (blockedKeys.includes("engineer")) {
   engineerPanel.innerHTML = `<p style="color:red; font-weight:bold;">你的技能已被封鎖！</p>`;
   return;
@@ -318,7 +318,7 @@ if (blockedKeys.includes("engineer")) {
     failCountEl.textContent    = result ? result.failCount : "尚未送出";
 
   } catch (err) {
-    console.error("❌ 工程師任務結果讀取失敗", err);
+    console.error("❌ 偵查官任務結果讀取失敗", err);
   }
 }
 

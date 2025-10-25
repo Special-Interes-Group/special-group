@@ -33,7 +33,7 @@ public class RoomService {
             int n = room.getPlayerCount();
             List<Room.RoleInfo> roles = switch (n) {
                 case 5 -> Arrays.asList(
-                    new Room.RoleInfo("工程師", "goodpeople1.png"),
+                    new Room.RoleInfo("偵查官", "goodpeople1.png"),
                     new Room.RoleInfo("普通倖存者", "goodpeople4.png"),
                     new Room.RoleInfo("普通倖存者", "goodpeople4.png"),
                     new Room.RoleInfo("潛伏者", "badpeople1.png"),
@@ -41,7 +41,7 @@ public class RoomService {
                 );
                 case 6 -> Arrays.asList(
                     new Room.RoleInfo("指揮官", "goodpeople3.png"),
-                    new Room.RoleInfo("工程師", "goodpeople1.png"),
+                    new Room.RoleInfo("偵查官", "goodpeople1.png"),
                     new Room.RoleInfo("普通倖存者", "goodpeople4.png"),
                     new Room.RoleInfo("普通倖存者", "goodpeople4.png"),
                     new Room.RoleInfo("潛伏者", "badpeople1.png"),
@@ -49,7 +49,7 @@ public class RoomService {
                 );
                 case 7 -> Arrays.asList(
                     new Room.RoleInfo("指揮官", "goodpeople3.png"),
-                    new Room.RoleInfo("工程師", "goodpeople1.png"),
+                    new Room.RoleInfo("偵查官", "goodpeople1.png"),
                     new Room.RoleInfo("醫護兵", "goodpeople2.png"),
                     new Room.RoleInfo("普通倖存者", "goodpeople4.png"),
                     new Room.RoleInfo("潛伏者", "badpeople1.png"),
@@ -58,7 +58,7 @@ public class RoomService {
                 );
                 case 8 -> Arrays.asList(
                     new Room.RoleInfo("指揮官", "goodpeople3.png"),
-                    new Room.RoleInfo("工程師", "goodpeople1.png"),
+                    new Room.RoleInfo("偵查官", "goodpeople1.png"),
                     new Room.RoleInfo("醫護兵", "goodpeople2.png"),
                     new Room.RoleInfo("普通倖存者", "goodpeople4.png"),
                     new Room.RoleInfo("普通倖存者", "goodpeople4.png"),
@@ -68,7 +68,7 @@ public class RoomService {
                 );
                 case 9 -> Arrays.asList(
                     new Room.RoleInfo("指揮官", "goodpeople3.png"),
-                    new Room.RoleInfo("工程師", "goodpeople1.png"),
+                    new Room.RoleInfo("偵查官", "goodpeople1.png"),
                     new Room.RoleInfo("醫護兵", "goodpeople2.png"),
                     new Room.RoleInfo("普通倖存者", "goodpeople4.png"),
                     new Room.RoleInfo("普通倖存者", "goodpeople4.png"),
@@ -79,7 +79,7 @@ public class RoomService {
                 );
                 case 10 -> Arrays.asList(
                     new Room.RoleInfo("指揮官", "goodpeople3.png"),
-                    new Room.RoleInfo("工程師", "goodpeople1.png"),
+                    new Room.RoleInfo("偵查官", "goodpeople1.png"),
                     new Room.RoleInfo("醫護兵", "goodpeople2.png"),
                     new Room.RoleInfo("普通倖存者", "goodpeople4.png"),
                     new Room.RoleInfo("普通倖存者", "goodpeople4.png"),
@@ -287,7 +287,7 @@ public class RoomService {
 
     public List<String> generateSkillOrder(Room room) {
     // 技能觸發順序固定
-        List<String> fixedOrder = Arrays.asList("影武者", "指揮官", "醫護兵", "潛伏者", "破壞者", "工程師");
+        List<String> fixedOrder = Arrays.asList("影武者", "指揮官", "醫護兵", "潛伏者", "破壞者", "偵查官");
         Set<String> assignedRoles = room.getAssignedRoles().values().stream()
                 .map(roleInfo -> roleInfo.getName()) // 假設 RoleInfo 有 getName()
                 .collect(Collectors.toSet());

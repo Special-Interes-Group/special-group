@@ -147,7 +147,7 @@ button:disabled { opacity: .5; cursor: default; }
 
 /* ===== 各職業動畫 ===== */
 
-/* 工程師 21–24 */
+/* 偵查官 21–24 */
 @keyframes engineerFrames {
   0%   { content: url("/images/21.png"); }
   25%  { content: url("/images/22.png"); }

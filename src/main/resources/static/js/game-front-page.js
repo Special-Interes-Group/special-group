@@ -126,7 +126,7 @@ function renderPlayers(arr){
 }
 function normalizeRoleKey(name) {
   const map = {
-    '工程師':  'engineer',
+    '偵查官':  'engineer',
     '醫護兵':  'medic',
     '破壞者':  'saboteur',
     '影武者':  'shadow',

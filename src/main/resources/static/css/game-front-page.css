@@ -646,7 +646,7 @@ body > * {
   display: block;
   animation: lurkerFrames 0.8s steps(1) infinite;  /* 速度更快 */
 }
-/* 工程師動畫 */
+/* 偵查官動畫 */
 @keyframes engineerFrames {
   0%     { content: url("/images/21.png"); }
   16.666%{ content: url("/images/22.png"); }

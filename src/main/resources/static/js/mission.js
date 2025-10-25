@@ -53,7 +53,7 @@ async function preloadAllRoles() {
 
 function normalizeRoleKey(name) {
   const map = {
-    "工程師": "engineer",
+    "偵查官": "engineer",
     "醫護兵": "medic",
     "破壞者": "saboteur",
     "影武者": "shadow",
@@ -209,6 +209,9 @@ confirmBtn?.addEventListener("click", async () => {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     choicePanel.classList.add("hidden");
     waitingPanel.classList.remove("hidden");
+      await setWaitAnimRole();
+    showRandomNote();
+    scheduleNextNote();
   } catch (err) {
     alert("❌ 任務卡送出失敗");
     successBtn.disabled = false;
@@ -239,7 +242,7 @@ const paperMessages = [
   "若你是好人：別急著發言，先聽訊息。",
   "若你是壞人：過度解釋是破綻，適度低調。",
   "注意上一回合誰急著帶風向？",
-  "工程師數據要記下來，誰可能是關鍵？",
+  "偵查官數據要記下來，誰可能是關鍵？",
   "有人一直保持沉默，是真低調還是心虛？",
   "投票反覆搖擺的人，可信度要降低。",
   "領袖選擇有沒有偏向？這也可能是線索。",
