@@ -7,8 +7,16 @@
   <style>
     html, body { margin:0; height:100%; overflow:hidden; }
     iframe.app-frame {
-      position:absolute; inset:0; width:100%; height:100%; border:0;
-    }
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  transform: scale(1);
+  transform-origin: top left;
+  zoom: 1; /* 有些瀏覽器或 Render 預覽頁需要這行 */
+}
+
     /* 一次性全螢幕遮罩（每次載入都會顯示，點一下或按鈕解鎖） */
     #overlay {
       position: fixed; inset: 0; width: 100%; height: 100%;
