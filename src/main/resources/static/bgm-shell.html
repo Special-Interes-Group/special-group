@@ -105,6 +105,15 @@
   </div>
 
   <script>
+    (function fixHiDPIScale() {
+  const ratio = window.devicePixelRatio || 1;
+  if (ratio > 1.05) {
+    document.body.style.transform = `scale(${ratio})`;
+    document.body.style.transformOrigin = "top left";
+    document.body.style.width = `${100 / ratio}%`;
+    document.body.style.height = `${100 / ratio}%`;
+  }
+})();
   (function(){
     // ===== 常數與節點 =====
     const audio   = document.getElementById('bgm');
