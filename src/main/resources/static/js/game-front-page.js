@@ -304,11 +304,12 @@ function updateOverallStats(successCount, failCount) {
 function updateRoundLabel(round, totalRounds) {
   const label = document.getElementById("round-label");
   if (label && round) {
-    label.textContent = totalRounds
-      ? `第 ${round} 輪 / 共 ${totalRounds} 輪`
+    label.innerHTML = totalRounds
+      ? `第 ${round} 輪<br>共 ${totalRounds} 輪`
       : `第 ${round} 輪`;
   }
 }
+
 
 async function fetchMissionSummary() {
   try {
