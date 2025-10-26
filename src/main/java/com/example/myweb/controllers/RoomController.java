@@ -234,7 +234,7 @@ public class RoomController {
         switch (players.size()) {
             case 5:
                 roles = Arrays.asList(
-                    new Room.RoleInfo("偵查官",      "goodpeople1.png"),
+                    new Room.RoleInfo("偵查官",     "goodpeople1.png"),
                     new Room.RoleInfo("普通倖存者", "goodpeople4.png"),
                     new Room.RoleInfo("普通倖存者", "goodpeople4.png"),
                     new Room.RoleInfo("潛伏者",     "badpeople1.png"),
@@ -259,7 +259,7 @@ public class RoomController {
                     new Room.RoleInfo("普通倖存者","goodpeople4.png"),
                     new Room.RoleInfo("潛伏者",     "badpeople1.png"),
                     new Room.RoleInfo("破壞者",     "badpeople2.png"),
-                    new Room.RoleInfo("邪惡平民",   "badpeople4.png")
+                    new Room.RoleInfo("影武者",     "badpeople3.png")
                 );
                 break;
             case 8:
@@ -271,7 +271,7 @@ public class RoomController {
                     new Room.RoleInfo("普通倖存者","goodpeople4.png"),
                     new Room.RoleInfo("潛伏者",     "badpeople1.png"),
                     new Room.RoleInfo("破壞者",     "badpeople2.png"),
-                    new Room.RoleInfo("邪惡平民",   "badpeople4.png")
+                    new Room.RoleInfo("影武者",     "badpeople3.png")
                 );
                 break;
             

@@ -54,7 +54,7 @@ public class RoomService {
                     new Room.RoleInfo("普通倖存者", "goodpeople4.png"),
                     new Room.RoleInfo("潛伏者", "badpeople1.png"),
                     new Room.RoleInfo("破壞者", "badpeople2.png"),
-                    new Room.RoleInfo("邪惡平民", "badpeople4.png")
+                    new Room.RoleInfo("影武者", "badpeople3.png")
                 );
                 case 8 -> Arrays.asList(
                     new Room.RoleInfo("指揮官", "goodpeople3.png"),
@@ -64,7 +64,7 @@ public class RoomService {
                     new Room.RoleInfo("普通倖存者", "goodpeople4.png"),
                     new Room.RoleInfo("潛伏者", "badpeople1.png"),
                     new Room.RoleInfo("破壞者", "badpeople2.png"),
-                    new Room.RoleInfo("邪惡平民", "badpeople4.png")
+                    new Room.RoleInfo("影武者", "badpeople3.png")
                 );
                 case 9 -> Arrays.asList(
                     new Room.RoleInfo("指揮官", "goodpeople3.png"),
@@ -77,18 +77,7 @@ public class RoomService {
                     new Room.RoleInfo("破壞者", "badpeople2.png"),
                     new Room.RoleInfo("影武者", "badpeople3.png")
                 );
-                case 10 -> Arrays.asList(
-                    new Room.RoleInfo("指揮官", "goodpeople3.png"),
-                    new Room.RoleInfo("偵查官", "goodpeople1.png"),
-                    new Room.RoleInfo("醫護兵", "goodpeople2.png"),
-                    new Room.RoleInfo("普通倖存者", "goodpeople4.png"),
-                    new Room.RoleInfo("普通倖存者", "goodpeople4.png"),
-                    new Room.RoleInfo("普通倖存者", "goodpeople4.png"),
-                    new Room.RoleInfo("潛伏者", "badpeople1.png"),
-                    new Room.RoleInfo("破壞者", "badpeople2.png"),
-                    new Room.RoleInfo("影武者", "badpeople3.png"),
-                    new Room.RoleInfo("邪惡平民", "badpeople4.png")
-                );
+                
                 default -> throw new RuntimeException("尚未支援 " + n + " 人的遊戲模式");
             };
 
