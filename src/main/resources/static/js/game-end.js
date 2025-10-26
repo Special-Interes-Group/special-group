@@ -117,8 +117,8 @@ function renderResult(record, resultEl, resBoard, winnerEl) {
 
   const boardImg = document.querySelector(".trophy-board");
   if (boardImg) {
-    if (winner === "正方") boardImg.src = "/images/trophy-board-blue.png";
-    else if (winner === "反方") boardImg.src = "/images/trophy-board-red.png";
+    if (winner === "正方") boardImg.src = "/images/trophy-board.png";
+    else if (winner === "反方") boardImg.src = "/images/trophy-board.png";
     else boardImg.src = "/images/trophy-board.png";
   }
 }
