@@ -1001,6 +1001,9 @@ if (!myRole.contains("平民")) {
         return ResponseEntity.badRequest().body("你已經使用過終極技能");
     }
 
+
+
+    
     // ✅ 檢查每位玩家猜測
     List<String> players = room.getPlayers();
     for (String p : players) {
