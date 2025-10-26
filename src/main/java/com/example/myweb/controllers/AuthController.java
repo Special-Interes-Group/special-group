@@ -111,10 +111,17 @@ public class AuthController {
 
     // 工具方法：遮蔽密碼 (僅保留首尾字元，中間換成 *)
     private String maskPassword(String password) {
-        if (password == null || password.length() <= 2) {
+        if (password == null || password.isEmpty()) {
+            return "";
+        }
+
+        if (password.length() <= 2) {
+            // 若長度小於等於2，就全部用 * 取代
             return "*".repeat(password.length());
         }
+
         int stars = password.length() - 2;
         return password.charAt(0) + "*".repeat(stars) + password.charAt(password.length() - 1);
     }
+
 }

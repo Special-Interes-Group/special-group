@@ -8,14 +8,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   let allRecords = [];
 
   try {
-    // 1. 取得統計資料
+    // 1️⃣ 取得統計資料
     const statsRes = await fetch(`/api/game-records/stats/${encodeURIComponent(playerName)}`);
     if (!statsRes.ok) throw new Error("統計 API 回應錯誤");
     const statsData = await statsRes.json();
     document.getElementById("total-games").textContent = statsData.totalGames;
     document.getElementById("win-rate").textContent = `${statsData.winRate.toFixed(1)}%`;
 
-    // 2. 取得玩家戰績列表
+    // 2️⃣ 取得玩家戰績列表
     const recordsRes = await fetch(`/api/game-records/player/${encodeURIComponent(playerName)}`);
     if (!recordsRes.ok) throw new Error("紀錄 API 回應錯誤");
     allRecords = await recordsRes.json();
@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // 初始渲染
     renderTable(allRecords, playerName);
 
-    // 篩選事件監聽
+    // 3️⃣ 篩選事件監聽（依「勝利 / 落敗」）
     const filterSelect = document.getElementById("filter-select");
     if (filterSelect) {
       filterSelect.addEventListener("change", (e) => {
@@ -33,7 +33,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (filter === "all") {
           renderTable(allRecords, playerName);
         } else {
-          const filtered = allRecords.filter(r => r.playerResults[playerName] === filter);
+          const filtered = allRecords.filter(r => {
+            const result = r.playerResults?.[playerName];
+            if (!result) return false;
+            const outcome = typeof result === "object" ? result.outcome : result;
+            return outcome === filter;
+          });
           renderTable(filtered, playerName);
         }
       });
@@ -71,25 +76,26 @@ function renderTable(records, playerName) {
     resultTd.textContent = record.result;
     tr.appendChild(resultTd);
 
-    // 我的結果（改良版）
+    // 我的結果
     const myResultTd = document.createElement("td");
-    let result = record.playerResults[playerName];
+    let result = record.playerResults?.[playerName];
 
+    // 若是字串（舊格式），嘗試解析成物件
     try {
       if (typeof result === "string") result = JSON.parse(result);
     } catch {}
 
     if (result && typeof result === "object") {
       const img = document.createElement("img");
-      img.src = result.avatar;
-      img.alt = result.role;
+      img.src = result.avatar || "/images/default.png";
+      img.alt = result.role || "";
       img.style.width = "40px";
       img.style.height = "40px";
       img.style.verticalAlign = "middle";
       img.style.marginRight = "6px";
 
       const span = document.createElement("span");
-      span.textContent = `${result.role}｜${result.outcome}`;
+      span.textContent = `${result.role || "未知角色"}｜${result.outcome || "-"}`;
 
       myResultTd.appendChild(img);
       myResultTd.appendChild(span);

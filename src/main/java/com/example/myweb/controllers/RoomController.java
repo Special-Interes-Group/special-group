@@ -874,36 +874,55 @@ public ResponseEntity<?> useLurkerSkill(@RequestBody Map<String, String> body) {
     @PostMapping("/room/{roomId}/end-game")
     public ResponseEntity<?> endGame(@PathVariable String roomId,
                                     @RequestParam String result) {
+
+        // 1️⃣ 取得房間
         Room room = roomRepository.findById(roomId).orElse(null);
         if (room == null) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "找不到房間"));
         }
 
-        // ✅ 標記遊戲結束時間
+        // 2️⃣ 檢查是否已有紀錄（防重複）
+        Optional<GameRecord> existing = gameRecordRepository.findByRoomId(roomId);
+        if (existing.isPresent()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of(
+                        "message", "此房間紀錄已存在，無需重複儲存。",
+                        "recordId", existing.get().getId()
+                    ));
+        }
+
+        // 3️⃣ 標記遊戲結束時間
         room.setEndTime(LocalDateTime.now());
         roomRepository.save(room);
 
-        // 好人陣營角色清單
-        Set<String> goodRoles = Set.of(
-            "普通倖存者", "偵查官", "指揮官", "醫護兵"
-        );
+        // 4️⃣ 好人角色列表
+        Set<String> goodRoles = Set.of("普通倖存者", "偵查官", "指揮官", "醫護兵");
 
-        Map<String, String> playerResults = new HashMap<>();
-        Map<String, RoleInfo> roles = room.getAssignedRoles();
+        // 5️⃣ 準備每位玩家的結果資料
+        Map<String, Map<String, Object>> playerResults = new HashMap<>();
+        Map<String, Room.RoleInfo> roles = room.getAssignedRoles();
 
-        // 判斷勝負
         boolean gameGoodWin = result.contains("正方") || result.contains("好人");
+
         for (String player : room.getPlayers()) {
-            String roleName = roles.get(player).getName();
+            Room.RoleInfo roleInfo = roles.get(player);
+            String roleName = roleInfo != null ? roleInfo.getName() : "未知角色";
+            String avatarFile = roleInfo != null ? roleInfo.getAvatar() : "default.png";
+
             boolean isGood = goodRoles.contains(roleName);
-            if ((isGood && gameGoodWin) || (!isGood && !gameGoodWin)) {
-                playerResults.put(player, "勝利");
-            } else {
-                playerResults.put(player, "落敗");
-            }
+            String outcome = ((isGood && gameGoodWin) || (!isGood && !gameGoodWin))
+                    ? "勝利" : "落敗";
+
+            Map<String, Object> detail = new HashMap<>();
+            detail.put("role", roleName);
+            detail.put("avatar", "/images/" + avatarFile);
+            detail.put("outcome", outcome);
+
+            playerResults.put(player, detail);
         }
 
-        // 建立遊戲紀錄
+        // 6️⃣ 建立遊戲紀錄物件
         GameRecord record = new GameRecord();
         record.setRoomId(roomId);
         record.setPlayDate(LocalDateTime.now());
@@ -911,9 +930,10 @@ public ResponseEntity<?> useLurkerSkill(@RequestBody Map<String, String> body) {
         record.setResult(result);
         record.setPlayers(room.getPlayers());
         record.setPlayerResults(playerResults);
+
         gameRecordRepository.save(record);
 
-        // ✅ 廣播遊戲結束資料
+        // 7️⃣ 廣播遊戲結束事件（給前端 WebSocket）
         simpMessagingTemplate.convertAndSend(
             "/topic/room/" + roomId,
             Map.of(
@@ -924,11 +944,26 @@ public ResponseEntity<?> useLurkerSkill(@RequestBody Map<String, String> body) {
             )
         );
 
+        // 8️⃣ 可選：延遲刪除房間（範例 3 分鐘）
+        /*
+        new Thread(() -> {
+            try {
+                Thread.sleep(3 * 60 * 1000);
+                roomRepository.deleteById(roomId);
+                System.out.println("🧹 房間 " + roomId + " 已自動清除。");
+            } catch (InterruptedException ignored) {}
+        }).start();
+        */
+
+        // 9️⃣ 回傳成功訊息
         return ResponseEntity.ok(Map.of(
-            "message", "遊戲結束，紀錄已保存，房間將於3分鐘後自動刪除",
-            "recordId", record.getId()
+            "message", "✅ 遊戲結束，紀錄已保存！",
+            "recordId", record.getId(),
+            "players", playerResults
         ));
     }
+
+
 
 @PostMapping("/api/skill/civilian-ultimate")
 public ResponseEntity<?> civilianUltimate(@RequestBody Map<String, Object> body) {
@@ -949,17 +984,17 @@ public ResponseEntity<?> civilianUltimate(@RequestBody Map<String, Object> body)
 
 
     // ✅ 角色判斷：直接從 assignedRoles 拿 name 判斷
-    Map<String, Room.RoleInfo> roles = room.getAssignedRoles();
-    if (roles == null) roles = Collections.emptyMap();  
-Room.RoleInfo myInfo = roles != null ? roles.get(playerName) : null;
-String myRole = (myInfo != null) ? myInfo.getName() : null;
-    if (myRole == null) {
-        return ResponseEntity.badRequest().body("查無你的角色");
-    }
-    if (!myRole.contains("平民")) {
-        return ResponseEntity.badRequest().body("僅平民可使用終極技能");
-    }
+    Map<String, Room.RoleInfo> roles =
+        Optional.ofNullable(room.getAssignedRoles()).orElse(Collections.emptyMap());
 
+Room.RoleInfo myInfo = roles.get(playerName);
+String myRole = (myInfo != null) ? myInfo.getName() : null;
+if (myRole == null) {
+    return ResponseEntity.badRequest().body("查無你的角色");
+}
+if (!myRole.contains("平民")) {
+    return ResponseEntity.badRequest().body("僅平民可使用終極技能");
+}
     // ✅ 檢查是否已使用
     Map<String, Boolean> ultUsed = room.getCivilianUltimateUsed();
     if (ultUsed != null && Boolean.TRUE.equals(ultUsed.get(playerName))) {

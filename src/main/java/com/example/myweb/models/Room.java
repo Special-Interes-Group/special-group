@@ -191,22 +191,35 @@ private Set<String> lurkerUsedThisRound = new HashSet<>();
     public void setVoteMap(Map<String, Boolean> voteMap) { this.voteMap = voteMap; }
 
     /* ========== 內部類：角色資訊 ========== */
-    public static class RoleInfo {
-        private String name;   // 角色名稱
-        private String image;  // 對應圖片檔
+public static class RoleInfo {
+    private String name;   // 角色名稱
+    private String image;  // 對應圖片檔（頭像）
 
-        public RoleInfo() {}
-        public RoleInfo(String name, String image) {
-            this.name  = name;
-            this.image = image;
-        }
+    public RoleInfo() {}
 
-        public String getName()  { return name;  }
-        public void   setName(String name)  { this.name = name; }
-
-        public String getImage() { return image; }
-        public void   setImage(String image) { this.image = image; }
+    public RoleInfo(String name, String image) {
+        this.name = name;
+        this.image = image;
     }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public String getImage() { return image; }
+    public void setImage(String image) { this.image = image; }
+
+    /** ✅ 提供前端相容命名（avatar） */
+    public String getAvatar() { return image; }
+    public void setAvatar(String avatar) { this.image = avatar; }
+
+    @Override
+    public String toString() {
+        return "RoleInfo{" +
+                "name='" + name + '\'' +
+                ", image='" + image + '\'' +
+                '}';
+    }
+}
     public int getCurrentRound() {
     return currentRound;
     }
@@ -348,5 +361,6 @@ public Set<String> getLurkerUsedThisRound() {
 public void setLurkerUsedThisRound(Set<String> lurkerUsedThisRound) {
     this.lurkerUsedThisRound = lurkerUsedThisRound;
 }
+
 
 }
