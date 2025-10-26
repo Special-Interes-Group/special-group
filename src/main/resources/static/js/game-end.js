@@ -1,3 +1,4 @@
+// /js/game-end.js
 /**
  * 啟動角色圖片的閃爍動畫
  * @param {HTMLImageElement} imgElement - 要操作的圖片元素
@@ -7,12 +8,15 @@
 function startCharacterAnimation(imgElement, frame1, frame2) {
   let currentFrame = 1;
   setInterval(() => {
-    if (!imgElement) return;
-    imgElement.src = currentFrame === 1 ? frame2 : frame1;
-    currentFrame = currentFrame === 1 ? 2 : 1;
-  }, 800);
+    if (currentFrame === 1) {
+      imgElement.src = frame2;
+      currentFrame = 2;
+    } else {
+      imgElement.src = frame1;
+      currentFrame = 1;
+    }
+  }, 800); // 每 800 毫秒切換一次圖片
 }
-
 document.addEventListener("DOMContentLoaded", async () => {
   const roomId = new URLSearchParams(window.location.search).get("roomId");
   const resultEl = document.getElementById("result-message");
@@ -22,13 +26,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const winnerEl = document.getElementById("winner");
 
   if (!roomId) {
-    if (resultEl) resultEl.textContent = "無法取得房間 ID";
-    return;
-  }
-
-  // ✅ 防止重複送出紀錄
-  if (sessionStorage.getItem("recordSaved_" + roomId)) {
-    console.log("⚠️ 此房間紀錄已儲存過，略過重複送出");
+    resultEl.textContent = "無法取得房間 ID";
     return;
   }
 
@@ -38,7 +36,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (recordRes.ok) {
       const record = await recordRes.json();
       renderResult(record, resultEl, resBoard, winnerEl);
-      sessionStorage.setItem("recordSaved_" + roomId, "true");
       return;
     }
 
@@ -64,18 +61,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     // 顯示結果在畫面與木牌上
     renderResult({ result, successCount: success, failCount: fail }, resultEl, resBoard, winnerEl);
 
-    // ✅ 儲存紀錄（後端有 409 防重）
+    // 儲存紀錄
     await sendGameRecord(roomId, result);
-
-    // ✅ 標記為已儲存，避免重複送出
-    sessionStorage.setItem("recordSaved_" + roomId, "true");
-
   } catch (err) {
     console.error("❌ 無法載入結局資料", err);
-    if (resultEl) resultEl.textContent = "無法取得遊戲結果，請稍後再試";
+    resultEl.textContent = "無法取得遊戲結果，請稍後再試";
   }
 });
 
+/**
+ * 🎯 顯示遊戲結果到頁面與木牌
+ */
+/**
+ * 🎯 顯示遊戲結果到頁面與木牌，並啟動角色動畫
+ */
 /**
  * 🎯 顯示遊戲結果到頁面與木牌，並啟動角色動畫
  */
@@ -118,8 +117,8 @@ function renderResult(record, resultEl, resBoard, winnerEl) {
 
   const boardImg = document.querySelector(".trophy-board");
   if (boardImg) {
-    if (winner === "正方") boardImg.src = "/images/trophy-board-blue.png";
-    else if (winner === "反方") boardImg.src = "/images/trophy-board-red.png";
+    if (winner === "正方") boardImg.src = "/images/trophy-board.png";
+    else if (winner === "反方") boardImg.src = "/images/trophy-board.png";
     else boardImg.src = "/images/trophy-board.png";
   }
 }
@@ -129,26 +128,20 @@ function renderResult(record, resultEl, resBoard, winnerEl) {
  */
 async function sendGameRecord(roomId, result) {
   try {
-    const res = await fetch(`/api/room/${roomId}/end-game?result=${encodeURIComponent(result)}`, {
+    await fetch(`/api/room/${roomId}/end-game?result=${encodeURIComponent(result)}`, {
       method: "POST"
     });
-    if (res.status === 409) {
-      console.log("⚠️ 後端已存在紀錄（409 Conflict），略過重複儲存。");
-    } else if (res.ok) {
-      console.log("✅ 遊戲紀錄已儲存並將於3分鐘後刪除房間。");
-    } else {
-      console.warn("⚠️ 儲存紀錄時發生非預期錯誤。");
-    }
+    console.log("✅ 遊戲紀錄已儲存並刪除房間");
   } catch (err) {
     console.error("❌ 無法儲存遊戲紀錄", err);
   }
 }
-
 // 🔹 若後端資料失敗或單純想測動畫，強制啟動角色動畫
 document.addEventListener("DOMContentLoaded", () => {
   const good = document.getElementById("good-guys-img");
   const bad = document.getElementById("bad-guys-img");
 
+  // 直接播放角色切換動畫（不靠 API）
   startCharacterAnimation(good, '/images/Good_Win1.png', '/images/Good_Win2.png');
   startCharacterAnimation(bad, '/images/Bad_Win1.png', '/images/Bad_Win2.png');
 });
