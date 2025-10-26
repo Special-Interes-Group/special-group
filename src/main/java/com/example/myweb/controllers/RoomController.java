@@ -944,22 +944,22 @@ public ResponseEntity<?> useLurkerSkill(@RequestBody Map<String, String> body) {
             )
         );
 
-        // 8️⃣ 可選：延遲刪除房間（範例 3 分鐘）
-        /*
+        /// ✅ 非同步排程：3 分鐘後刪除房間
         new Thread(() -> {
             try {
-                Thread.sleep(3 * 60 * 1000);
-                roomRepository.deleteById(roomId);
-                System.out.println("🧹 房間 " + roomId + " 已自動清除。");
-            } catch (InterruptedException ignored) {}
+                Thread.sleep(180_000); // 180000 毫秒 = 3 分鐘
+                if (roomRepository.existsById(roomId)) {
+                    roomRepository.deleteById(roomId);
+                    System.out.println("🧹 房間 " + roomId + " 已自動刪除（遊戲結束後 3 分鐘）");
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         }).start();
-        */
 
-        // 9️⃣ 回傳成功訊息
         return ResponseEntity.ok(Map.of(
-            "message", "✅ 遊戲結束，紀錄已保存！",
-            "recordId", record.getId(),
-            "players", playerResults
+            "message", "遊戲結束，紀錄已保存，房間將於 3 分鐘後自動刪除",
+            "recordId", record.getId()
         ));
     }
 
@@ -1003,7 +1003,7 @@ if (!myRole.contains("平民")) {
 
 
 
-    
+
     // ✅ 檢查每位玩家猜測
     List<String> players = room.getPlayers();
     for (String p : players) {
