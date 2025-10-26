@@ -72,7 +72,7 @@ public class RoomService {
                     new Room.RoleInfo("醫護兵", "goodpeople2.png"),
                     new Room.RoleInfo("普通倖存者", "goodpeople4.png"),
                     new Room.RoleInfo("普通倖存者", "goodpeople4.png"),
-                    new Room.RoleInfo("普通倖存者", "goodpeople4.png"),
+                    new Room.RoleInfo("邪惡平民", "badpeople4.png"),
                     new Room.RoleInfo("潛伏者", "badpeople1.png"),
                     new Room.RoleInfo("破壞者", "badpeople2.png"),
                     new Room.RoleInfo("影武者", "badpeople3.png")
