@@ -1,6 +1,7 @@
 package com.example.myweb.models;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
@@ -15,6 +16,7 @@ public class GameRecord {
     @Id
     private String id;
 
+    @Indexed(unique = true)
     private String roomId;               // 房間 ID
     private LocalDateTime playDate;      // 遊戲時間
     private int playerCount;             // 玩家數

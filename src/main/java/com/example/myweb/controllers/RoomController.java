@@ -718,8 +718,8 @@ public ResponseEntity<?> useLurkerSkill(@RequestBody Map<String, String> body) {
 
         String roleName = roleInfo.getName();
         String faction = switch (roleName) {
-            case "偵查官", "醫護兵", "指揮官", "普通倖存者", "影武者" -> "正義";
-            case "潛伏者", "破壞者", "邪惡平民" -> "邪惡";
+            case "偵查官", "醫護兵", "指揮官", "普通倖存者", "影武者" -> "好人";
+            case "潛伏者", "破壞者", "邪惡平民" -> "壞人";
             default -> "未知";
         };
 
@@ -772,9 +772,13 @@ public ResponseEntity<?> useLurkerSkill(@RequestBody Map<String, String> body) {
             : null;
 
         if (protectedPlayer != null && protectedPlayer.equals(targetName)) {
-            return ResponseEntity.status(403).body("該玩家已受到醫護兵保護，破壞者無法破壞此卡。");
-        }
+            // ✅ 即使被保護，也要記錄使用次數
+            room.getSaboteurSkillCount().put(playerName, used + 1);
+            room.getSaboteurUsedThisRound().add(roundKey);
+            roomRepository.save(room);
 
+            return ResponseEntity.status(403).body("該玩家已受到醫護兵保護，此次技能仍計入使用次數。");
+        }
         // ✅ 執行移除卡片
         String removed = record.getCardMap().remove(targetName);
         room.getSaboteurSkillCount().put(playerName, used + 1);
@@ -883,13 +887,10 @@ public ResponseEntity<?> useLurkerSkill(@RequestBody Map<String, String> body) {
         }
 
         // 2️⃣ 檢查是否已有紀錄（防重複）
-        Optional<GameRecord> existing = gameRecordRepository.findByRoomId(roomId);
-        if (existing.isPresent()) {
+        
+        if (gameRecordRepository.existsByRoomId(roomId)) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(Map.of(
-                        "message", "此房間紀錄已存在，無需重複儲存。",
-                        "recordId", existing.get().getId()
-                    ));
+                    .body(Map.of("message", "此房間紀錄已存在，略過重複儲存。"));
         }
 
         // 3️⃣ 標記遊戲結束時間

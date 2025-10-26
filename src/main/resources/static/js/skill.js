@@ -422,11 +422,20 @@ commanderBtn.addEventListener("click", async () => {
     });
 
     if (res.ok) {
-       showImmersiveForRole(myRoleName); // ← 新增這行：影武者用完當回合就顯示敘事
       const data = await res.json();
+      
+      // ✅ 顯示查詢結果
       commanderResult.textContent = `🔍 ${selected} 的陣營是：${data.faction}（剩餘次數：${data.remaining}）`;
+
+      // ✅ 禁用按鈕防止連點
       commanderBtn.disabled = true;
       commanderSelect.disabled = true;
+
+      // ✅ 5 秒後自動回到等待畫面
+      setTimeout(() => {
+        showImmersiveForRole(myRoleName);
+      }, 5000);
+
     } else {
       const errMsg = await res.text();
       commanderResult.textContent = `❌ 錯誤：${errMsg}`;
@@ -436,6 +445,7 @@ commanderBtn.addEventListener("click", async () => {
   }
 });
 
+
 // ✅ 破壞者
 async function fetchSaboteurTargets() {
   try {
@@ -444,33 +454,56 @@ async function fetchSaboteurTargets() {
     const cardMap = room.missionResults?.[room.currentRound]?.cardMap || {};
     const usedMap = room.usedSkillMap || {};
 
-    // 若你（破壞者）本局已使用，仍直接進入敘事等待
-    if (usedMap[playerName]) {
-      showImmersiveForRole(myRoleName);
-      return;
-    }
+   if (usedMap[playerName]) {
+  showImmersiveForRole(myRoleName);
+  return;
+}
 
-    // ⚠️ 僅顯示「已提交」的人名，不再顯示 SUCCESS/FAIL
+
     saboteurSelect.innerHTML = `<option value="">-- 選擇要破壞的玩家 --</option>`;
     Object.keys(cardMap).forEach(name => {
       if (name !== playerName) {
         const option = document.createElement("option");
         option.value = name;
-        option.textContent = `${name}`; // 不顯示卡面屬性
+        option.textContent = `${name}（已提交）`;
         saboteurSelect.appendChild(option);
       }
     });
-
-    // 額外提示（可選）
-    if (saboteurSelect.options.length === 1) {
-      saboteurStatus.textContent = "⚠️ 尚無可選擇的對象（可能還未交卡）";
-    } else {
-      saboteurStatus.textContent = "請選擇要使其卡片失效的提交者。";
-    }
   } catch (err) {
     saboteurStatus.textContent = "❌ 無法取得可破壞對象";
   }
 }
+
+saboteurBtn.addEventListener("click", async () => {
+  const selected = saboteurSelect.value;
+  saboteurStatus.textContent = "";
+
+  if (!selected) {
+    saboteurStatus.textContent = "請選擇要破壞的對象。";
+    return;
+  }
+
+  try {
+    const res = await fetch("/api/skill/saboteur-nullify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ roomId, playerName, targetName: selected })
+    });
+
+    if (res.ok) {
+        showImmersiveForRole(myRoleName);// ← 新增這行：影武者用完當回合就顯示敘事
+      const data = await res.json();
+      saboteurStatus.textContent = `🧨 已使 ${selected} 的卡片 (${data.removed}) 失效！剩餘次數 ${data.remaining}`;
+      saboteurBtn.disabled = true;
+      saboteurSelect.disabled = true;
+    } else {
+      const errMsg = await res.text();
+      saboteurStatus.textContent = "❌ 破壞失敗：" + errMsg;
+    }
+  } catch (err) {
+    saboteurStatus.textContent = "❌ 發送請求失敗：" + err;
+  }
+});
 
 
   // ✅ 醫護兵：載入目標
