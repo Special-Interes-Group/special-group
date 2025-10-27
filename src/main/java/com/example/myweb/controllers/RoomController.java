@@ -289,20 +289,7 @@ public class RoomController {
                     new Room.RoleInfo("影武者",     "badpeople3.png")
                 );
                 break;
-            case 10:
-                roles = Arrays.asList(
-                    new Room.RoleInfo("指揮官",     "goodpeople3.png"),
-                    new Room.RoleInfo("偵查官",     "goodpeople1.png"),
-                    new Room.RoleInfo("醫護兵",     "goodpeople2.png"),
-                    new Room.RoleInfo("普通倖存者","goodpeople4.png"),
-                    new Room.RoleInfo("普通倖存者","goodpeople4.png"),
-                    new Room.RoleInfo("普通倖存者","goodpeople4.png"),
-                    new Room.RoleInfo("潛伏者",     "badpeople1.png"),
-                    new Room.RoleInfo("破壞者",     "badpeople2.png"),
-                    new Room.RoleInfo("影武者",     "badpeople3.png"),
-                    new Room.RoleInfo("邪惡平民",   "badpeople4.png")
-                );
-                break;
+            
             default:
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                                             .body(Map.of("error",
@@ -327,6 +314,15 @@ public class RoomController {
         room.setAssignedRoles(assigned);
         room.setCurrentLeaderIndex(0); // ✅ 領袖從 players[0] 開始
         room.setLeader(players.get(0)); // ✅ 指定領袖名稱（供前端使用）
+        
+        // ✅ 根據人數設定最大回合數
+        switch (players.size()) {
+            case 5 -> room.setMaxRound(5);
+            case 6, 7 -> room.setMaxRound(6);
+            case 8, 9 -> room.setMaxRound(7);
+            default -> room.setMaxRound(5); // 安全預設值
+        }
+        
         roomService.generateSkillOrder(room); 
         roomRepository.save(room);
         simpMessagingTemplate.convertAndSend("/topic/room/" + roomId, "startRealGame");
@@ -953,97 +949,99 @@ public ResponseEntity<?> useLurkerSkill(@RequestBody Map<String, String> body) {
         ));
     }
 
+    @PostMapping("/skill/civilian-guess")
+    public ResponseEntity<?> useCivilianGuess(@RequestBody Map<String, Object> body) {
+        String roomId = (String) body.get("roomId");
+        String playerName = (String) body.get("playerName");
+        @SuppressWarnings("unchecked")
+        List<String> guessed = (List<String>) body.get("guessed");
 
+        Room room = roomRepository.findById(roomId).orElse(null);
+        if (room == null) return ResponseEntity.status(404).body("房間不存在");
 
-@PostMapping("/api/skill/civilian-ultimate")
-public ResponseEntity<?> civilianUltimate(@RequestBody Map<String, Object> body) {
-    String roomId = (String) body.get("roomId");
-    String playerName = (String) body.get("playerName");
-    @SuppressWarnings("unchecked")
-    Map<String, String> guesses = (Map<String, String>) body.get("guesses");
+        Map<String, Room.RoleInfo> roles = room.getAssignedRoles();
+        if (roles == null) return ResponseEntity.badRequest().body("角色尚未分配");
 
-    Room room = getRoomById(roomId).getBody();  // ✅ 修正：因為 getRoomById 回傳 ResponseEntity<Room>
-    if (room == null) {
-        return ResponseEntity.badRequest().body("房間不存在");
-    }
+        Room.RoleInfo myRole = roles.get(playerName);
+        if (myRole == null) return ResponseEntity.badRequest().body("角色未找到");
 
-    // ✅ 最後一回合判斷：你的 Room 沒有 totalRounds，用 maxRound 判斷
-    if (room.getCurrentRound() != room.getMaxRound()) {
-    return ResponseEntity.badRequest().body("不是最後一回合，無法使用終極技能");
-}
+        String myRoleName = myRole.getName();
+        boolean isGood;
 
-
-    // ✅ 角色判斷：直接從 assignedRoles 拿 name 判斷
-    Map<String, Room.RoleInfo> roles =
-        Optional.ofNullable(room.getAssignedRoles()).orElse(Collections.emptyMap());
-
-Room.RoleInfo myInfo = roles.get(playerName);
-String myRole = (myInfo != null) ? myInfo.getName() : null;
-if (myRole == null) {
-    return ResponseEntity.badRequest().body("查無你的角色");
-}
-if (!myRole.contains("平民")) {
-    return ResponseEntity.badRequest().body("僅平民可使用終極技能");
-}
-    // ✅ 檢查是否已使用
-    Map<String, Boolean> ultUsed = room.getCivilianUltimateUsed();
-    if (ultUsed != null && Boolean.TRUE.equals(ultUsed.get(playerName))) {
-        return ResponseEntity.badRequest().body("你已經使用過終極技能");
-    }
-
-
-
-
-    // ✅ 檢查每位玩家猜測
-    List<String> players = room.getPlayers();
-    for (String p : players) {
-        if (p.equals(playerName)) continue;
-        String g = guesses.get(p);
-        if (g == null || (!g.equals("good") && !g.equals("evil"))) {
-            return ResponseEntity.badRequest().body("每位玩家都需要選擇陣營");
-        }
-    }
-
-    // ✅ 檢查是否全對
-    boolean allCorrect = true;
-    for (String p : players) {
-        if (p.equals(playerName)) continue;
-       Room.RoleInfo info = roles.get(p);
-String roleName = (info != null) ? info.getName() : null;
-
-// 名稱判斷：含「邪惡」或英文別名 "civilian-bad" 視為邪惡
-boolean isEvilName = roleName != null &&
-        (roleName.contains("邪惡") || roleName.equalsIgnoreCase("civilian-bad"));
-
-String actualFaction = isEvilName ? "evil" : "good";
-        if (!actualFaction.equals(guesses.get(p))) {
-            allCorrect = false;
-            break;
-        }
-    }
-
-    // ✅ 標記已使用
-    if (ultUsed == null) ultUsed = new HashMap<>();
-    ultUsed.put(playerName, true);
-    room.setCivilianUltimateUsed(ultUsed);
-
-    // ✅ 加分：Room 裡目前沒有 goodScore/evilScore，我幫你用 missionResultsExtraScore
-    int bonus = allCorrect ? 1 : 0;
-    if (bonus > 0) {
-        if (myRole.contains("邪惡")) {
-            room.setEvilExtraScore(room.getEvilExtraScore() + 1);
+        // ✅ 限定角色
+        if (myRoleName.equals("平民") || myRoleName.equals("普通倖存者")) {
+            isGood = true;
+        } else if (myRoleName.equals("邪惡平民")) {
+            isGood = false;
         } else {
-            room.setGoodExtraScore(room.getGoodExtraScore() + 1);
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("此角色無法使用此技能");
         }
+
+        // ✅ 初始化防重複
+        if (room.getCivilianGuessUsed() == null) {
+            room.setCivilianGuessUsed(new HashSet<>());
+        }
+        if (room.getCivilianGuessUsed().contains(playerName)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("你已經使用過此技能");
+        }
+        room.getCivilianGuessUsed().add(playerName);
+
+        int playerCount = roles.size();
+
+        Set<String> goodRoles = switch (playerCount) {
+            case 5 -> Set.of("偵查官", "普通倖存者");
+            case 6 -> Set.of("指揮官", "偵查官", "普通倖存者");
+            case 7 -> Set.of("指揮官", "偵查官", "醫護兵", "普通倖存者");
+            case 8 -> Set.of("指揮官", "偵查官", "醫護兵", "普通倖存者");
+            case 9 -> Set.of("指揮官", "偵查官", "醫護兵", "普通倖存者");
+            default -> Set.of("偵查官", "普通倖存者");
+        };
+
+        Set<String> evilRoles = switch (playerCount) {
+            case 5 -> Set.of("潛伏者", "邪惡平民");
+            case 6 -> Set.of("潛伏者", "破壞者", "邪惡平民");
+            case 7 -> Set.of("潛伏者", "破壞者", "影武者");
+            case 8 -> Set.of("潛伏者", "破壞者", "影武者");
+            case 9 -> Set.of("潛伏者", "破壞者", "影武者", "邪惡平民");
+            default -> Set.of("潛伏者", "破壞者", "邪惡平民");
+        };
+
+
+
+        // ✅ 建立正確隊友名單（不包含自己）
+        Set<String> correctTeam = roles.entrySet().stream()
+                .filter(e -> {
+                    String r = e.getValue().getName();
+                    return isGood ? goodRoles.contains(r) : evilRoles.contains(r);
+                })
+                .map(Map.Entry::getKey)
+                .filter(name -> !name.equals(playerName))
+                .collect(Collectors.toSet());
+
+        Set<String> guessedSet = new HashSet<>(guessed);
+
+        // ✅ 比對是否完全正確
+        boolean allCorrect = guessedSet.equals(correctTeam);
+
+        if (allCorrect) {
+            if (isGood) room.setSuccessCount(room.getSuccessCount() + 1);
+            else room.setFailCount(room.getFailCount() + 1);
+        }
+
+        roomRepository.save(room);
+
+        Map<String, Object> res = new HashMap<>();
+        res.put("allCorrect", allCorrect);
+        res.put("correctTeam", correctTeam);
+        res.put("successCount", room.getSuccessCount());
+        res.put("failCount", room.getFailCount());
+
+        return ResponseEntity.ok(res);
     }
 
-    return ResponseEntity.ok(Map.of(
-            "message", allCorrect ? "✅ 全部猜對！你的陣營 +1 分！" : "❌ 有猜錯，未加分。",
-            "allCorrect", allCorrect,
-            "goodScore", room.getGoodExtraScore(),
-            "evilScore", room.getEvilExtraScore()
-    ));
-}
+
 
 
 }

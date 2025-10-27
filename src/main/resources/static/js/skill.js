@@ -51,8 +51,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   if (skillRoleLabel) {
-  skillRoleLabel.textContent = `角色：${myRoleName || "???"}`;
-}
+    skillRoleLabel.textContent = `角色：${myRoleName || "???"}`;
+  }
+
   applyRoleThemeByKey(myRoleKey);
 
   if (myRoleKey === "engineer") {
@@ -61,15 +62,63 @@ document.addEventListener("DOMContentLoaded", async () => {
     engineerPanel?.classList.remove("hidden");
     await showEngineerResult();
   }
+
   if (myRoleKey === "lurker")    await fetchLurkerTargets();
   if (myRoleKey === "commander") await fetchCommanderTargets();
   if (myRoleKey === "saboteur")  await fetchSaboteurTargets();
   if (myRoleKey === "medic")     await fetchMedicTargets();
   if (myRoleKey === "shadow")    await fetchShadowTargets();
 
+  // ✅ 平民/邪惡平民技能用的按鈕監聽器（新增這段）
+  const guessBtn = document.getElementById("civilian-guess-btn");
+  if (guessBtn) {
+    guessBtn.addEventListener("click", async () => {
+      const selected = [...document.querySelectorAll("#civilian-guess-list input:checked")].map(c => c.value);
+      const msg = document.getElementById("civilian-guess-status");
+
+      if (selected.length === 0) {
+        msg.textContent = "⚠️ 請至少選擇一位隊友。";
+        msg.style.color = "#f7d07a";
+        return;
+      }
+
+      try {
+        const res = await fetch("/api/skill/civilian-guess", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ roomId, playerName, guessed: selected })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.allCorrect) {
+            msg.textContent = "✅ 全部猜對！你的判斷為陣營帶來了額外分數。";
+            msg.style.color = "#8ef78a";
+          } else {
+            msg.textContent = "❌ 猜錯了，下次再接再厲！";
+            msg.style.color = "#ff7c7c";
+          }
+          guessBtn.disabled = true; // 防止重複點擊
+        } else if (res.status === 409) {
+          const text = await res.text();
+          msg.textContent = text || "⚠️ 你已經使用過此技能。";
+          msg.style.color = "#ffbb33";
+        } else {
+          msg.textContent = "⚠️ 提交失敗，請稍後再試。";
+          msg.style.color = "#ffbb33";
+        }
+      } catch (err) {
+        console.error(err);
+        msg.textContent = "⚠️ 網路錯誤，請檢查連線。";
+        msg.style.color = "#ffbb33";
+      }
+    });
+  }
+
   connectSkillPhase();
   startCountdown(20);
 });
+
 
 
 // —— 角色中英對照 —— //
@@ -197,36 +246,59 @@ function connectSkillPhase() {
 
     // 拿狀態後決定顯示
     Promise.all([
-      fetch(`/api/room/${roomId}/skill-state`).then(r => r.json()),
-      fetch(`/api/room/${roomId}`).then(r => r.json())
-    ])
-    .then(([state, room]) => {
-      const finalRound = (room.currentRound === room.maxRound-1);
+  fetch(`/api/room/${roomId}/skill-state`).then(r => r.json()),
+  fetch(`/api/room/${roomId}`).then(r => r.json())
+])
+.then(([state, room]) => {
+  console.log("🧩 Debug round check:", { currentRound: room.currentRound, maxRound: room.maxRound });
+  const finalRound = (room.maxRound && room.currentRound >= room.maxRound);
 
+  console.log("🎭 Role check:", myRoleKey);
 
-     // —— 平民 —— //
-if (isCivilianKey(myRoleKey)) {
-  if (finalRound) {
-    const ultPanelEl   = document.getElementById("civilian-ultimate-panel");
-    const waitingEl    = document.getElementById("waiting-panel");
-    const skillPanelEl = document.getElementById("my-skill-panel");
-    if (ultPanelEl) {
-      ultPanelEl.classList.remove("hidden");
-      fetchCivilianUltimateTargets();
+  if (isCivilianKey(myRoleKey)) {
+    if (finalRound) {
+      const ultPanelEl   = document.getElementById("civilian-ultimate-panel");
+      const waitingEl    = document.getElementById("waiting-panel");
+      const skillPanelEl = document.getElementById("my-skill-panel");
+      if (ultPanelEl) {
+        ultPanelEl.classList.remove("hidden");
+        fetchCivilianUltimateTargets();
+      }
+      waitingEl?.classList.add("hidden");
+      skillPanelEl?.classList.remove("hidden");
+    } else {
+      showImmersiveForRole(myRoleName);
     }
-    waitingEl?.classList.add("hidden");
-    skillPanelEl?.classList.remove("hidden");
-    const msgEl = document.getElementById("skill-message");
-    if (msgEl) msgEl.textContent = immersiveMessage(myRoleName); // 敘事用中文
-  } else {
-    showImmersiveForRole(myRoleName); // 敘事用中文
+    return;
   }
-  return;
-}
+
+
+
 
 // —— 非平民 —— //
 const waitingEl    = document.getElementById("waiting-panel");
 const skillPanelEl = document.getElementById("my-skill-panel");
+
+// ✅ 平民／邪惡平民：載入猜測目標
+async function fetchCivilianUltimateTargets() {
+  const res = await fetch(`/api/room/${roomId}`);
+  const room = await res.json();
+  const players = room.players || [];
+  const list = document.getElementById("civilian-guess-list");
+  list.innerHTML = "";
+
+  players.forEach(p => {
+    if (p !== playerName) {
+      const lbl = document.createElement("label");
+      lbl.innerHTML = `<input type="checkbox" value="${p}"> ${p}`;
+      list.appendChild(lbl);
+      list.appendChild(document.createElement("br"));
+    }
+  });
+}
+
+
+
 
 // 1) 偵查官：永遠顯示
 if (myRoleKey === "engineer") {

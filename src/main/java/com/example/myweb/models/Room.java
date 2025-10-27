@@ -328,7 +328,7 @@ public static class RoleInfo {
 
 
     // ✅ 若沒有就新增：最後回合上限
-private int maxRound;  // 若你原本叫 totalRounds 或 roundLimit，就把名稱對應起來
+private int maxRound = 5;  // 若你原本叫 totalRounds 或 roundLimit，就把名稱對應起來
 
 public int getMaxRound() { return maxRound; }
 public void setMaxRound(int maxRound) { this.maxRound = maxRound; }
@@ -338,6 +338,15 @@ private Map<String, Boolean> civilianUltimateUsed = new HashMap<>();
 
 public Map<String, Boolean> getCivilianUltimateUsed() { return civilianUltimateUsed; }
 public void setCivilianUltimateUsed(Map<String, Boolean> civilianUltimateUsed) { this.civilianUltimateUsed = civilianUltimateUsed; }
+
+private Set<String> civilianGuessUsed = new HashSet<>();
+public Set<String> getCivilianGuessUsed() {
+    return civilianGuessUsed;
+}
+
+public void setCivilianGuessUsed(Set<String> civilianGuessUsed) {
+    this.civilianGuessUsed = civilianGuessUsed;
+}
 
 // ✅ 額外加分（終極技能用）
 private int goodExtraScore = 0;
