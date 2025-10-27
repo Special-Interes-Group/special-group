@@ -127,11 +127,29 @@ function renderResult(record, resultEl, resBoard, winnerEl) {
  * 💾 儲存遊戲紀錄並刪除房間
  */
 async function sendGameRecord(roomId, result) {
+  // ✅ 取得當前玩家名稱與房主名稱
+  const playerName = sessionStorage.getItem("playerName");
+  const hostName = sessionStorage.getItem("hostName");
+
+  // ✅ 僅房主可發送紀錄
+  if (playerName !== hostName) {
+    console.log("ℹ️ 非房主，不送出遊戲紀錄");
+    return;
+  }
+
   try {
-    await fetch(`/api/room/${roomId}/end-game?result=${encodeURIComponent(result)}`, {
-      method: "POST"
-    });
-    console.log("✅ 遊戲紀錄已儲存並刪除房間");
+    // ✅ 同時傳送 playerName，讓後端驗證身份
+    const res = await fetch(
+      `/api/room/${roomId}/end-game?result=${encodeURIComponent(result)}&playerName=${encodeURIComponent(playerName)}`,
+      { method: "POST" }
+    );
+
+    if (res.ok) {
+      console.log("✅ 房主已成功儲存遊戲紀錄");
+    } else {
+      const errMsg = await res.text();
+      console.warn("⚠️ 儲存遊戲紀錄失敗:", errMsg);
+    }
   } catch (err) {
     console.error("❌ 無法儲存遊戲紀錄", err);
   }

@@ -877,9 +877,11 @@ public ResponseEntity<?> useLurkerSkill(@RequestBody Map<String, String> body) {
     }
 
     @PostMapping("/room/{roomId}/end-game")
-    public ResponseEntity<?> endGame(@PathVariable String roomId,
-                                    @RequestParam String result) {
-
+    public ResponseEntity<?> endGame(
+            @PathVariable String roomId,
+            @RequestParam String result,
+            @RequestParam(required = false) String playerName // 👈 加上玩家名稱
+    ) {
         // 1️⃣ 取得房間
         Room room = roomRepository.findById(roomId).orElse(null);
         if (room == null) {
@@ -887,69 +889,55 @@ public ResponseEntity<?> useLurkerSkill(@RequestBody Map<String, String> body) {
                     .body(Map.of("error", "找不到房間"));
         }
 
-        // 2️⃣ 檢查是否已有紀錄（防重複）
-        
+        // 2️⃣ 檢查呼叫者是否為房主
+        // ✅ 取得房主（players[0]）
+        List<String> players = room.getPlayers();
+        if (players == null || players.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "房間玩家列表為空"));
+        }
+
+        String hostName = players.get(0); // 第一位是房主
+
+        // ✅ 確認呼叫者是否為房主
+        if (playerName == null || !playerName.equals(hostName)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "只有房主可儲存遊戲紀錄"));
+        }
+
+        // 3️⃣ 防重複儲存
         if (gameRecordRepository.existsByRoomId(roomId)) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(Map.of("message", "此房間紀錄已存在，略過重複儲存。"));
         }
 
-        // 3️⃣ 標記遊戲結束時間
-        room.setEndTime(LocalDateTime.now());
+        // 4️⃣ 標記遊戲結束時間
+        room.setEndTime(LocalDateTime.now(ZoneId.of("Asia/Taipei")));
         roomRepository.save(room);
 
-        // 4️⃣ 好人角色列表
-        Set<String> goodRoles = Set.of("普通倖存者", "偵查官", "指揮官", "醫護兵");
-
-        // 5️⃣ 準備每位玩家的結果資料
-        Map<String, Map<String, Object>> playerResults = new HashMap<>();
-        Map<String, Room.RoleInfo> roles = room.getAssignedRoles();
-
-        boolean gameGoodWin = result.contains("正方") || result.contains("好人");
-
-        for (String player : room.getPlayers()) {
-            Room.RoleInfo roleInfo = roles.get(player);
-            String roleName = roleInfo != null ? roleInfo.getName() : "未知角色";
-            String avatarFile = roleInfo != null ? roleInfo.getAvatar() : "default.png";
-
-            boolean isGood = goodRoles.contains(roleName);
-            String outcome = ((isGood && gameGoodWin) || (!isGood && !gameGoodWin))
-                    ? "勝利" : "落敗";
-
-            Map<String, Object> detail = new HashMap<>();
-            detail.put("role", roleName);
-            detail.put("avatar", "/images/" + avatarFile);
-            detail.put("outcome", outcome);
-
-            playerResults.put(player, detail);
-        }
-
-        // 6️⃣ 建立遊戲紀錄物件
+        // 5️⃣ 建立遊戲紀錄
         GameRecord record = new GameRecord();
         record.setRoomId(roomId);
         record.setPlayDate(LocalDateTime.now(ZoneId.of("Asia/Taipei")));
         record.setPlayerCount(room.getPlayers().size());
         record.setResult(result);
         record.setPlayers(room.getPlayers());
-        record.setPlayerResults(playerResults);
+        record.setPlayerResults(roomService.generatePlayerResults(room, result)); // 👈 如果你有這種方法
+        record.setSuccessCount(room.getSuccessCount());
+        record.setFailCount(room.getFailCount());
 
         gameRecordRepository.save(record);
 
-        // 7️⃣ 廣播遊戲結束事件（給前端 WebSocket）
+        // 6️⃣ 廣播遊戲結束事件
         simpMessagingTemplate.convertAndSend(
-            "/topic/room/" + roomId,
-            Map.of(
-                "type", "GAME_END",
-                "result", result,
-                "success", room.getSuccessCount(),
-                "fail", room.getFailCount()
-            )
+                "/topic/room/" + roomId,
+                Map.of("type", "GAME_END", "result", result)
         );
 
-        /// ✅ 非同步排程：3 分鐘後刪除房間
+        // 7️⃣ 安排延遲刪除房間
         new Thread(() -> {
             try {
-                Thread.sleep(180_000); // 180000 毫秒 = 3 分鐘
+                Thread.sleep(180_000);
                 if (roomRepository.existsById(roomId)) {
                     roomRepository.deleteById(roomId);
                     System.out.println("🧹 房間 " + roomId + " 已自動刪除（遊戲結束後 3 分鐘）");
@@ -960,8 +948,8 @@ public ResponseEntity<?> useLurkerSkill(@RequestBody Map<String, String> body) {
         }).start();
 
         return ResponseEntity.ok(Map.of(
-            "message", "遊戲結束，紀錄已保存，房間將於 3 分鐘後自動刪除",
-            "recordId", record.getId()
+                "message", "✅ 遊戲結束，紀錄已保存，房間將於 3 分鐘後自動刪除",
+                "recordId", record.getId()
         ));
     }
 

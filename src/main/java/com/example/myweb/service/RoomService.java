@@ -325,6 +325,44 @@ public class RoomService {
             }
         }
     }
+    /**
+ * ✅ 根據房間與遊戲結果，生成每位玩家的角色與勝敗資訊
+ */
+    public Map<String, Map<String, Object>> generatePlayerResults(Room room, String result) {
+        Map<String, Map<String, Object>> playerResults = new HashMap<>();
+
+        if (room == null || room.getPlayers() == null || room.getPlayers().isEmpty()) {
+            return playerResults;
+        }
+
+        // ✅ 定義好人陣營角色
+        Set<String> goodRoles = Set.of("普通倖存者", "偵查官", "指揮官", "醫護兵");
+
+        // ✅ 判斷本場是好人贏還是壞人贏
+        boolean goodWin = result.contains("正方") || result.contains("好人");
+
+        // ✅ 取得已分配角色
+        Map<String, Room.RoleInfo> assignedRoles = room.getAssignedRoles();
+
+        for (String player : room.getPlayers()) {
+            Room.RoleInfo info = assignedRoles != null ? assignedRoles.get(player) : null;
+            String roleName = info != null ? info.getName() : "未知角色";
+            String avatar = info != null ? info.getAvatar() : "default.png";
+
+            boolean isGood = goodRoles.contains(roleName);
+            String outcome = ((isGood && goodWin) || (!isGood && !goodWin)) ? "勝利" : "落敗";
+
+            Map<String, Object> detail = new HashMap<>();
+            detail.put("role", roleName);
+            detail.put("avatar", "/images/" + avatar);
+            detail.put("outcome", outcome);
+
+            playerResults.put(player, detail);
+        }
+
+        return playerResults;
+    }
+
     
 
 }

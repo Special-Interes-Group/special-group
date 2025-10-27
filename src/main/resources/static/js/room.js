@@ -66,6 +66,9 @@ async function loadRoomData() {
     document.getElementById("roomId").textContent = `房間 ${room.roomName || roomId}`;
     document.getElementById("host").textContent   = `局主：${room.players?.[0] || "???"}`;
 
+    if (room.players && room.players.length > 0) {
+      sessionStorage.setItem("hostName", room.players[0]);
+    }
     // 更新旗幟名稱（10 面）
     const players = room.players || [];
     currentPlayers = players;
