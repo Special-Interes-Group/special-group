@@ -1,0 +1,166 @@
+/* === 背景設定 === */
+body {
+  margin: 0;
+  padding: 0;
+  background: url("/images/wood-bg.png") no-repeat center center / cover;
+  font-family: "Noto Sans TC", sans-serif;
+  color: #3b2f1d;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* === 卷軸容器 (保持適應性) === */
+.scroll-container {
+  position: relative;
+  width: 85vw;
+  max-width: 1300px;
+  aspect-ratio: 3 / 2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* === 卷軸圖片 (保持最大化) === */
+.scroll {
+    position: absolute; 
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 1800px; /* 保持最大化的卷軸尺寸 */
+    max-width: 95vw;
+    height: auto; 
+    z-index: 1;
+}
+
+/* === 卷軸內容 (關鍵調整: 擴大內容最大寬度) === */
+.scroll-content {
+  position: relative;
+  z-index: 2;
+  width: 85%; 
+  max-width: 800px; /* 從 650px 擴大到 800px，給表格更多空間 */
+  text-align: center;
+  color: #3b2f1d;
+  padding: 0 0 3.5% 0; /* 保持極限上推的 padding */
+}
+
+/* === 標題 (保持放大) === */
+h1 {
+  font-family: "Noto Sans TC", sans-serif;
+  font-size: 3.2rem; /* 最大化放大標題 */
+  margin-bottom: 2.5rem; /* 增加間距 */
+  color: #4a2d18;
+  text-shadow: 1px 1px 2px #d9b46c;
+}
+
+/* === 統計區 (保持放大) === */
+.stats {
+  background: rgba(255, 248, 230, 0.75);
+  border-radius: 10px;
+  padding: 20px 40px; /* 最大化內邊距 */
+  display: inline-block;
+  margin-bottom: 3rem; /* 增加間距 */
+  font-size: 1.8rem; /* 最大化放大字體 */
+}
+
+/* === 篩選區 (保持放大) === */
+.filter {
+  margin-bottom: 3rem; /* 增加間距 */
+  font-size: 1.7rem; /* 最大化放大字體 */
+}
+
+/* === 表格滾動容器設計 (保持 3 行高度) === */
+.records-scroll-container {
+  max-height: 280px; /* 保持 3 行紀錄的高度 */
+  overflow-y: auto; 
+  border-radius: 10px;
+  margin: 0 auto 3.5rem auto; /* 增加間距 */
+  width: 90%; 
+}
+
+/* === 表格樣式 === */
+.records-table {
+  width: 100%; 
+  border-collapse: collapse;
+  overflow: hidden;
+  table-layout: fixed; 
+}
+
+/* 表格列寬度分配：調整寬度，特別增加「日期」和「我的結果」的佔比 */
+.records-table th:nth-child(1),
+.records-table td:nth-child(1) {
+    width: 40%; /* 日期欄位增加寬度 */
+    text-align: center;
+}
+
+.records-table th:nth-child(2),
+.records-table td:nth-child(2) {
+    width: 10%; /* 玩家數欄位微調縮窄 */
+}
+
+.records-table th:nth-child(3),
+.records-table td:nth-child(3) {
+    width: 15%; /* 遊戲結果欄位微調縮窄 */
+}
+
+.records-table th:nth-child(4),
+.records-table td:nth-child(4) {
+    width: 35%; /* 我的結果欄位增加寬度 */
+    text-align: left; 
+}
+
+
+/* 讓表格頭部固定不動 */
+.records-table thead {
+  position: sticky; 
+  top: 0;           
+  z-index: 10;      
+}
+
+.records-table th {
+  background: #d4a463; 
+  color: #fff;
+  padding: 18px; 
+  text-shadow: 1px 1px 2px #5c3a16;
+  font-size: 1.4rem; 
+}
+
+/* === 表格內容 (將背景重新應用在 tbody) === */
+.records-table tbody {
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.records-table td {
+  padding: 18px; 
+  border-bottom: 1px solid #e0c69c;
+  font-size: 1.35rem; 
+  /* 針對表格中的圖片也放大一些 */
+  & img {
+      width: 60px !important; 
+      height: 60px !important;
+  }
+}
+
+.records-table tr:hover {
+  background-color: #fff2d0;
+}
+
+/* === 返回按鈕 (保持放大) === */
+.back-btn {
+  margin-top: 3rem; 
+  padding: 20px 40px; 
+  border: none;
+  background: linear-gradient(135deg, #a9743b, #d49e58);
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+  font-size: 1.5rem; 
+  transition: 0.2s;
+}
+
+.back-btn:hover {
+  transform: scale(1.05);
+  background: linear-gradient(135deg, #d49e58, #a9743b);
+}

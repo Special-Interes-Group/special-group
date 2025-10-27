@@ -1,22 +1,20 @@
-html, body {
-  height: 100%;
-}
+/* 讓整個瀏覽器視窗都使用木頭/任務背景圖 */
 body {
   margin: 0;
   font-family: sans-serif;
   display: grid;
   place-items: center;
-  background: #111;
+  background: url('/images/mission.png') center/cover no-repeat; /* 圖片移到 body */
   overflow: hidden;
 }
 
-/* 背景桌面 */
+/* 舞台容器改為單純的透明容器，不再有背景圖和寬度限制 */
 .stage {
   position: relative;
-  width: min(96vw, 1200px);
-  aspect-ratio: 3 / 2;
-  background: url('/images/mission.png') center/cover no-repeat;
-  border-radius: 8px;
+  width: 100vw; /* 讓容器填滿視窗寬度 */
+  height: 100vh; /* 讓容器填滿視窗高度 */
+  background: none; /* 移除背景圖 */
+  border-radius: 0; /* 移除邊角 */
   overflow: hidden;
 }
 
