@@ -25,10 +25,12 @@ package com.example.myweb;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.scheduling.annotation.EnableScheduling;   // ✅ 新增 import
+import org.springframework.scheduling.annotation.EnableScheduling;
+import jakarta.annotation.PostConstruct;   // ✅ 新增 import
+import java.util.TimeZone;               // ✅ 新增 import
 
 @SpringBootApplication
-@EnableScheduling   // ✅ 啟用定時任務
+@EnableScheduling
 public class MywebApplication {
 
     public static void main(String[] args) {
@@ -38,4 +40,10 @@ public class MywebApplication {
         SpringApplication.run(MywebApplication.class, args);
     }
 
+    /** ✅ 啟動時設定全域時區為台灣時間 */
+    @PostConstruct
+    public void init() {
+        TimeZone.setDefault(TimeZone.getTimeZone("Asia/Taipei"));
+        System.out.println("🕒 系統時區已設定為 Asia/Taipei (台灣)");
+    }
 }

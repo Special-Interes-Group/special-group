@@ -38,6 +38,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.time.ZoneId;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -926,7 +927,7 @@ public ResponseEntity<?> useLurkerSkill(@RequestBody Map<String, String> body) {
         // 6️⃣ 建立遊戲紀錄物件
         GameRecord record = new GameRecord();
         record.setRoomId(roomId);
-        record.setPlayDate(LocalDateTime.now());
+        record.setPlayDate(LocalDateTime.now(ZoneId.of("Asia/Taipei")));
         record.setPlayerCount(room.getPlayers().size());
         record.setResult(result);
         record.setPlayers(room.getPlayers());
