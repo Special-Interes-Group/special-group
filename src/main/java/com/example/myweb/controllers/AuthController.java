@@ -30,9 +30,17 @@ public class AuthController {
         String username = user.getUsername();
         String password = user.getPassword();
 
+        Map<String, Object> response = new HashMap<>();
+
+        // 🔍 帳號格式驗證：只允許英文與數字
+        if (!username.matches("^[A-Za-z0-9]+$")) {
+            response.put("success", false);
+            response.put("message", "帳號名請由數字及英文組成，請勿包含符號或空白！");
+            return response;
+        }
+
         boolean success = userService.register(username, password);
 
-        Map<String, Object> response = new HashMap<>();
         if (success) {
             response.put("success", true);
             response.put("message", "註冊成功！");
@@ -42,6 +50,7 @@ public class AuthController {
         }
         return response;
     }
+
 
     // ================= 登入 =================
     @PostMapping("/auth/do-login")
