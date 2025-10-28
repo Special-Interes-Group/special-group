@@ -205,12 +205,51 @@ async function confirmSelection(){
   }
 }
 
-function applyRolesToPlayers(roleMap){
-  players = players.map(p => ({...p, role: roleMap[p.name]?.name}));
+function applyRolesToPlayers(roleMap) {
+  // 套用角色資料
+  players = players.map(p => ({ ...p, role: roleMap[p.name]?.name }));
   renderPlayers(players);
+
   const self = players.find(p => p.name === playerName);
-  if (self) { myRole = self.role; localStorage.setItem('myRole', myRole || ""); }
+  if (self) {
+    myRole = self.role;
+    localStorage.setItem('myRole', myRole || "");
+  }
+
+  // === ✅ 新增：壞人互相顯示標記 ===
+  setTimeout(() => {
+    const evilRoles = ["潛伏者", "破壞者", "影武者", "邪惡平民"];
+    const myName = sessionStorage.getItem("playerName");
+    const myRoleNow = myRole;
+
+    // 只有壞人會顯示同夥
+    if (evilRoles.includes(myRoleNow)) {
+      console.log("🧩 你是壞人，顯示同陣營標記...");
+      Object.entries(roleMap).forEach(([player, info]) => {
+        const roleName = info.name;
+        if (evilRoles.includes(roleName) && player !== myName) {
+          // 找到該玩家卡片（根據名稱）
+          const card = [...document.querySelectorAll(".player-card")].find(el =>
+            el.textContent.includes(player)
+          );
+          if (card) {
+            const mark = document.createElement("div");
+            mark.className = "evil-mark";
+            mark.textContent = "☠️";
+            mark.style.position = "absolute";
+            mark.style.top = "4px";
+            mark.style.right = "4px";
+            mark.style.fontSize = "1.3em";
+            mark.style.color = "red";
+            mark.style.textShadow = "0 0 4px black";
+            card.appendChild(mark);
+          }
+        }
+      });
+    }
+  }, 600); // 延遲確保 renderPlayers 完成
 }
+
 
 async function fetchPlayers(){
   try{

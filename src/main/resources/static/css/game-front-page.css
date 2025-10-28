@@ -807,3 +807,16 @@ body > * {
 .round-text {
   margin-top: -30px;  /* 建議從 15px 開始微調 */
 }
+/* === 壞人同夥標記 ☠️ === */
+.evil-mark {
+  color: red;
+  text-shadow: 1px 1px 3px black;
+  font-size: 1.5em;
+  animation: evilBlink 1.2s infinite;
+  z-index: 10;
+}
+
+@keyframes evilBlink {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.2); }
+}
