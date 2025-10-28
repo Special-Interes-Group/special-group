@@ -1,21 +1,25 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>角色介紹</title>
-    <link rel="stylesheet" href="/css/introduction.css">
-    <script src="/js/introduction.js" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>角色瀏覽</title>
+  <link rel="stylesheet" href="/css/introduction.css">
+  <script src="/js/introduction.js" defer></script>
 </head>
 <body>
-    <div class="card-container">
-        <button class="arrow-btn left-btn">←</button>
-        <div class="card" id="character-card">
-            <img src="/images/goodpeople1.png" alt="角色圖像">
-            <p id="character-info">偵查者<br>每回合開始時可以查看成功跟失敗各自的數量(本技能可以每回合使用)</p>
-        </div>
-        <button class="arrow-btn right-btn">→</button>
+  <div class="card-container">
+    <button class="arrow-btn left-btn">←</button>
+
+    <div class="card" id="image-card">
+      <img id="gallery-img" src="/images/a1.png" alt="展示圖片">
+      <!-- ✅ 在這裡加上說明文字 -->
+      <p id="image-caption"></p>
     </div>
-    <a href="/about" class="back-btn">返回上頁</a> <!-- 返回按鈕 -->
+
+    <button class="arrow-btn right-btn">→</button>
+  </div>
+
+  <a href="/about" class="back-btn">返回上頁</a>
 </body>
 </html>

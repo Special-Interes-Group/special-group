@@ -27,6 +27,7 @@
 package com.example.myweb.controllers;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -38,7 +39,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.time.ZoneId;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -628,7 +628,7 @@ public ResponseEntity<?> useLurkerSkill(@RequestBody Map<String, String> body) {
     int round = room.getCurrentRound();
     MissionRecord record = room.getMissionResults().get(round);
     if (record == null || record.getCardMap() == null || !record.getCardMap().containsKey(targetName)) {
-        return ResponseEntity.status(400).body("該玩家尚未提交卡片");
+        return ResponseEntity.status(400).body("該玩家卡片已被破壞");
     }
 
     // ✅ 整場限一次
