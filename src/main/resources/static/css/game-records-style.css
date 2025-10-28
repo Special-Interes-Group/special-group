@@ -9,154 +9,116 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  transform: scale(0.6);        /* ✅ 整體縮小為 60% */
+  transform-origin: center;     /* ✅ 從中央縮放，保持置中 */
 }
 
-/* === 卷軸容器 (保持適應性) === */
+/* === 卷軸容器 === */
 .scroll-container {
   position: relative;
-  width: 85vw;
-  max-width: 1300px;
+  width: 51vw;            /* 原 85vw × 0.6 */
+  max-width: 780px;       /* 原 1300px × 0.6 */
   aspect-ratio: 3 / 2;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-/* === 卷軸圖片 (保持最大化) === */
+/* === 卷軸圖片 === */
 .scroll {
-    position: absolute; 
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 1800px; /* 保持最大化的卷軸尺寸 */
-    max-width: 95vw;
-    height: auto; 
-    z-index: 1;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 1080px;          /* 原 1800px × 0.6 */
+  max-width: 57vw;        /* 原 95vw × 0.6 */
+  height: auto;
+  z-index: 1;
 }
 
-/* === 卷軸內容 (關鍵調整: 擴大內容最大寬度) === */
+/* === 卷軸內容 === */
 .scroll-content {
   position: relative;
   z-index: 2;
-  width: 85%; 
-  max-width: 800px; /* 從 650px 擴大到 800px，給表格更多空間 */
+  width: 51%;             /* 原 85% × 0.6 */
+  max-width: 480px;       /* 原 800px × 0.6 */
   text-align: center;
   color: #3b2f1d;
-  padding: 0 0 3.5% 0; /* 保持極限上推的 padding */
+  padding: 0 0 2.1% 0;    /* 原 3.5% × 0.6 */
 }
 
-/* === 標題 (保持放大) === */
+/* === 標題 === */
 h1 {
-  font-family: "Noto Sans TC", sans-serif;
-  font-size: 3.2rem; /* 最大化放大標題 */
-  margin-bottom: 2.5rem; /* 增加間距 */
+  font-size: 1.92rem;     /* 原 3.2rem × 0.6 */
+  margin-bottom: 1.5rem;  /* 原 2.5rem × 0.6 */
   color: #4a2d18;
   text-shadow: 1px 1px 2px #d9b46c;
 }
 
-/* === 統計區 (保持放大) === */
+/* === 統計區 === */
 .stats {
   background: rgba(255, 248, 230, 0.75);
-  border-radius: 10px;
-  padding: 20px 40px; /* 最大化內邊距 */
+  border-radius: 6px;     /* 原 10px × 0.6 */
+  padding: 12px 24px;     /* 原 20×40 × 0.6 */
   display: inline-block;
-  margin-bottom: 3rem; /* 增加間距 */
-  font-size: 1.8rem; /* 最大化放大字體 */
+  margin-bottom: 1.8rem;  /* 原 3rem × 0.6 */
+  font-size: 1.08rem;     /* 原 1.8rem × 0.6 */
 }
 
-/* === 篩選區 (保持放大) === */
+/* === 篩選區 === */
 .filter {
-  margin-bottom: 3rem; /* 增加間距 */
-  font-size: 1.7rem; /* 最大化放大字體 */
+  margin-bottom: 1.8rem;  /* 原 3rem × 0.6 */
+  font-size: 1.02rem;     /* 原 1.7rem × 0.6 */
 }
 
-/* === 表格滾動容器設計 (保持 3 行高度) === */
+/* === 表格滾動容器 === */
 .records-scroll-container {
-  max-height: 280px; /* 保持 3 行紀錄的高度 */
-  overflow-y: auto; 
-  border-radius: 10px;
-  margin: 0 auto 3.5rem auto; /* 增加間距 */
-  width: 90%; 
+  max-height: 168px;      /* 原 280px × 0.6 */
+  overflow-y: auto;
+  border-radius: 6px;     /* 原 10px × 0.6 */
+  margin: 0 auto 2.1rem auto;
+  width: 54%;             /* 原 90% × 0.6 */
 }
 
 /* === 表格樣式 === */
 .records-table {
-  width: 100%; 
+  width: 100%;
   border-collapse: collapse;
   overflow: hidden;
-  table-layout: fixed; 
+  table-layout: fixed;
 }
 
-/* 表格列寬度分配：調整寬度，特別增加「日期」和「我的結果」的佔比 */
-.records-table th:nth-child(1),
-.records-table td:nth-child(1) {
-    width: 40%; /* 日期欄位增加寬度 */
-    text-align: center;
-}
-
-.records-table th:nth-child(2),
-.records-table td:nth-child(2) {
-    width: 10%; /* 玩家數欄位微調縮窄 */
-}
-
-.records-table th:nth-child(3),
-.records-table td:nth-child(3) {
-    width: 15%; /* 遊戲結果欄位微調縮窄 */
-}
-
-.records-table th:nth-child(4),
-.records-table td:nth-child(4) {
-    width: 35%; /* 我的結果欄位增加寬度 */
-    text-align: left; 
-}
-
-
-/* 讓表格頭部固定不動 */
-.records-table thead {
-  position: sticky; 
-  top: 0;           
-  z-index: 10;      
-}
-
-.records-table th {
-  background: #d4a463; 
-  color: #fff;
-  padding: 18px; 
-  text-shadow: 1px 1px 2px #5c3a16;
-  font-size: 1.4rem; 
-}
-
-/* === 表格內容 (將背景重新應用在 tbody) === */
-.records-table tbody {
-  background: rgba(255, 255, 255, 0.8);
-}
-
+.records-table th,
 .records-table td {
-  padding: 18px; 
-  border-bottom: 1px solid #e0c69c;
-  font-size: 1.35rem; 
-  /* 針對表格中的圖片也放大一些 */
-  & img {
-      width: 60px !important; 
-      height: 60px !important;
-  }
+  padding: 10.8px;        /* 原 18px × 0.6 */
+  font-size: 0.81rem;     /* 原 1.35rem × 0.6 */
 }
 
-.records-table tr:hover {
-  background-color: #fff2d0;
+/* 表頭樣式 */
+.records-table th {
+  background: #d4a463;
+  color: #fff;
+  text-shadow: 1px 1px 2px #5c3a16;
+  font-size: 0.84rem;     /* 原 1.4rem × 0.6 */
 }
 
-/* === 返回按鈕 (保持放大) === */
+/* 表格中圖片大小 */
+.records-table td img {
+  width: 36px !important; /* 原 60px × 0.6 */
+  height: 36px !important;
+}
+
+/* === 返回按鈕 === */
 .back-btn {
-  margin-top: 3rem; 
-  padding: 20px 40px; 
+  margin-top: 1.8rem;
+  padding: 12px 24px;     /* 原 20×40 × 0.6 */
   border: none;
   background: linear-gradient(135deg, #a9743b, #d49e58);
   color: white;
-  border-radius: 8px;
+  border-radius: 5px;
   cursor: pointer;
   box-shadow: 0 3px 6px rgba(0,0,0,0.3);
-  font-size: 1.5rem; 
+  font-size: 0.9rem;      /* 原 1.5rem × 0.6 */
   transition: 0.2s;
 }
 
