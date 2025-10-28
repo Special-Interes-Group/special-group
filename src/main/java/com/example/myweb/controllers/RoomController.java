@@ -27,7 +27,6 @@
 package com.example.myweb.controllers;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -39,6 +38,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.time.ZoneId;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -598,9 +598,26 @@ public class RoomController {
         record.setSuccessCount(success);
         record.setFailCount(fail);
 
-        // ✅ 累計寫回 Room
-        room.setSuccessCount(room.getSuccessCount() + success);
-        room.setFailCount(room.getFailCount() + fail);
+        // ✅ 累計任務結果 + 技能加分
+        int totalSuccess = room.getSuccessCount() + success + room.getGoodExtraScore();
+        int totalFail    = room.getFailCount() + fail + room.getEvilExtraScore();
+
+        room.setSuccessCount(totalSuccess);
+        room.setFailCount(totalFail);
+
+        // ✅ 若不是最後一輪，才清空技能分；最後一輪保留加分用於最終統計
+        int maxRound = room.getMaxRound();
+        boolean isFinalRound = (currentRound >= maxRound);
+
+        if (!isFinalRound) {
+            room.setGoodExtraScore(0);
+            room.setEvilExtraScore(0);
+        } else {
+            System.out.println("🛡 最後一輪保留技能加分：goodExtra=" +
+                room.getGoodExtraScore() + ", evilExtra=" + room.getEvilExtraScore());
+        }
+
+
 
         // 清除暫存資料
         room.getSubmittedMissionCards().clear();
@@ -919,8 +936,9 @@ public ResponseEntity<?> useLurkerSkill(@RequestBody Map<String, String> body) {
         record.setResult(result);
         record.setPlayers(room.getPlayers());
         record.setPlayerResults(roomService.generatePlayerResults(room, result)); // 👈 如果你有這種方法
-        record.setSuccessCount(room.getSuccessCount());
-        record.setFailCount(room.getFailCount());
+        record.setSuccessCount(room.getSuccessCount() + room.getGoodExtraScore());
+        record.setFailCount(room.getFailCount() + room.getEvilExtraScore());
+
 
         gameRecordRepository.save(record);
 
@@ -958,6 +976,7 @@ public ResponseEntity<?> useLurkerSkill(@RequestBody Map<String, String> body) {
 
         Room room = roomRepository.findById(roomId).orElse(null);
         if (room == null) return ResponseEntity.status(404).body("房間不存在");
+
 
         Map<String, Room.RoleInfo> roles = room.getAssignedRoles();
         if (roles == null) return ResponseEntity.badRequest().body("角色尚未分配");
@@ -1026,9 +1045,13 @@ public ResponseEntity<?> useLurkerSkill(@RequestBody Map<String, String> body) {
         boolean allCorrect = guessedSet.equals(correctTeam);
 
         if (allCorrect) {
-            if (isGood) room.setSuccessCount(room.getSuccessCount() + 1);
-            else room.setFailCount(room.getFailCount() + 1);
+            if (isGood) {
+                room.setGoodExtraScore(room.getGoodExtraScore() + 1);
+            } else {
+                room.setEvilExtraScore(room.getEvilExtraScore() + 1);
+            }
         }
+
 
         roomRepository.save(room);
 
@@ -1037,6 +1060,8 @@ public ResponseEntity<?> useLurkerSkill(@RequestBody Map<String, String> body) {
         res.put("correctTeam", correctTeam);
         res.put("successCount", room.getSuccessCount());
         res.put("failCount", room.getFailCount());
+        res.put("goodExtraScore", room.getGoodExtraScore());
+        res.put("evilExtraScore", room.getEvilExtraScore());
 
         return ResponseEntity.ok(res);
     }
