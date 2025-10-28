@@ -369,7 +369,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // === 依 background-size: cover 計算紙面矩形在視窗中的實際座標 ===
-const BG_NATURAL = { w: 1536, h: 1024 };           // /images/test.png 原圖尺寸
+const BG_NATURAL = { w: 1536, h: 1024 };           // /images/test.jpg 原圖尺寸
 const PAPER_RECT = { x: 480, y: 128, w: 574, h: 576 }; // 中央大紙在原圖中的位置
 
 function layoutPaperBoard() {

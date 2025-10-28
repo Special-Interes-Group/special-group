@@ -12,7 +12,7 @@ body{
   height:100vh;
   font-family:"IM Fell English","Cinzel",Georgia,serif;
   color:var(--paper-ink);
-  background:url('/images/test.png') center/cover no-repeat;
+  background:url('/images/test.jpg') center/cover no-repeat;
   position:relative;
 }
 /* 舞台聚光，讓中間更亮，四周自然吃暗 */
