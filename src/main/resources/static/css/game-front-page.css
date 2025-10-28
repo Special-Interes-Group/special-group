@@ -762,8 +762,8 @@ body > * {
 /* 左下角統計區背景：純木紋 + 白色字體（字體再小3px） */
 #overall-stats {
   position: fixed;
-  bottom: 25px;
-  left: 25px;
+  bottom: -5px;
+  left: 5px;
   background: url('/images/Mood.png') center/contain no-repeat;
   padding: 25px 35px;
   border-radius: 10px;
@@ -787,8 +787,8 @@ body > * {
 /* 左上角輪數提示樣式（保持木牌不動） */ 
 #round-label { 
   position: fixed; 
-  top: 10px; /* ✅ 不要太上面，避免繩子被裁掉 */ 
-  left: 18px; 
+  top: -30px; /* ✅ 不要太上面，避免繩子被裁掉 */ 
+  left: -20px; 
   background: url('/images/board4.png') center/95% no-repeat;
   padding: 70px 70px;  /* 稍微縮小內距，讓比例自然 */
   color: #fff; 
