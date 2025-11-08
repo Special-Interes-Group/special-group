@@ -6,7 +6,7 @@ const images = [
   "/images/a5.png",
   "/images/a6.png",
   "/images/a7.png",
-  "/images/a8.png",
+  "/images/a8new.png",
 ];
 
 // 每張圖片對應的文字說明（如果沒有就留空字串）

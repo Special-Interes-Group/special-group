@@ -233,16 +233,18 @@ function applyRolesToPlayers(roleMap) {
             el.textContent.includes(player)
           );
           if (card) {
-            const mark = document.createElement("div");
+            const mark = document.createElement("img");
             mark.className = "evil-mark";
-            mark.textContent = "☠️";
+            mark.src = "/images/badlogo.png";  // ✅ 你的圖片路徑
+            mark.alt = "壞人標記";
             mark.style.position = "absolute";
             mark.style.top = "4px";
             mark.style.right = "4px";
-            mark.style.fontSize = "1.3em";
-            mark.style.color = "red";
-            mark.style.textShadow = "0 0 4px black";
+            mark.style.width = "28px";   // ✅ 可以依需要微調大小
+            mark.style.height = "28px";
+            mark.style.zIndex = "10";
             card.appendChild(mark);
+
           }
         }
       });
