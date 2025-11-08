@@ -53,9 +53,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       (room.failCount || 0) ;
 
     let result = "";
-    if (success > fail) {
+    if (success > fail*2) {
       result = "正方勝利";
-    } else if (fail > success) {
+    } else if (fail*2 > success) {
       result = "反方勝利";
     } else {
       result = "平手";
