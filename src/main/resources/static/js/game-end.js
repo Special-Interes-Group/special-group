@@ -50,7 +50,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const success =
       (room.successCount || 0) + (room.goodExtraScore || 0);
     const fail =
-      (room.failCount || 0) + (room.evilExtraScore || 0);
+      (room.failCount || 0) ;
 
     let result = "";
     if (success > fail) {

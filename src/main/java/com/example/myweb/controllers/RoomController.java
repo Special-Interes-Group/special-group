@@ -977,7 +977,6 @@ public ResponseEntity<?> useLurkerSkill(@RequestBody Map<String, String> body) {
         Room room = roomRepository.findById(roomId).orElse(null);
         if (room == null) return ResponseEntity.status(404).body("房間不存在");
 
-
         Map<String, Room.RoleInfo> roles = room.getAssignedRoles();
         if (roles == null) return ResponseEntity.badRequest().body("角色尚未分配");
 
@@ -985,13 +984,13 @@ public ResponseEntity<?> useLurkerSkill(@RequestBody Map<String, String> body) {
         if (myRole == null) return ResponseEntity.badRequest().body("角色未找到");
 
         String myRoleName = myRole.getName();
-        boolean isGood;
 
-        // ✅ 限定角色
+        // ✅ 限定角色（邪惡平民直接跳出，不允許使用）
         if (myRoleName.equals("平民") || myRoleName.equals("普通倖存者")) {
-            isGood = true;
+            // OK
         } else if (myRoleName.equals("邪惡平民")) {
-            isGood = false;
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("邪惡平民無需猜同伴，遊戲已自動結算。");
         } else {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body("此角色無法使用此技能");
@@ -1012,46 +1011,26 @@ public ResponseEntity<?> useLurkerSkill(@RequestBody Map<String, String> body) {
         Set<String> goodRoles = switch (playerCount) {
             case 5 -> Set.of("偵查官", "普通倖存者");
             case 6 -> Set.of("指揮官", "偵查官", "普通倖存者");
-            case 7 -> Set.of("指揮官", "偵查官", "醫護兵", "普通倖存者");
-            case 8 -> Set.of("指揮官", "偵查官", "醫護兵", "普通倖存者");
-            case 9 -> Set.of("指揮官", "偵查官", "醫護兵", "普通倖存者");
+            case 7, 8, 9 -> Set.of("指揮官", "偵查官", "醫護兵", "普通倖存者");
             default -> Set.of("偵查官", "普通倖存者");
         };
 
-        Set<String> evilRoles = switch (playerCount) {
-            case 5 -> Set.of("潛伏者", "邪惡平民");
-            case 6 -> Set.of("潛伏者", "破壞者", "邪惡平民");
-            case 7 -> Set.of("潛伏者", "破壞者", "影武者");
-            case 8 -> Set.of("潛伏者", "破壞者", "影武者");
-            case 9 -> Set.of("潛伏者", "破壞者", "影武者", "邪惡平民");
-            default -> Set.of("潛伏者", "破壞者", "邪惡平民");
-        };
-
-
-
-        // ✅ 建立正確隊友名單（不包含自己）
+        // ✅ 只好人能執行猜測
         Set<String> correctTeam = roles.entrySet().stream()
                 .filter(e -> {
                     String r = e.getValue().getName();
-                    return isGood ? goodRoles.contains(r) : evilRoles.contains(r);
+                    return goodRoles.contains(r);
                 })
                 .map(Map.Entry::getKey)
                 .filter(name -> !name.equals(playerName))
                 .collect(Collectors.toSet());
 
         Set<String> guessedSet = new HashSet<>(guessed);
-
-        // ✅ 比對是否完全正確
         boolean allCorrect = guessedSet.equals(correctTeam);
 
         if (allCorrect) {
-            if (isGood) {
-                room.setGoodExtraScore(room.getGoodExtraScore() + 1);
-            } else {
-                room.setEvilExtraScore(room.getEvilExtraScore() + 1);
-            }
+            room.setGoodExtraScore(room.getGoodExtraScore() + 1);
         }
-
 
         roomRepository.save(room);
 
@@ -1061,10 +1040,11 @@ public ResponseEntity<?> useLurkerSkill(@RequestBody Map<String, String> body) {
         res.put("successCount", room.getSuccessCount());
         res.put("failCount", room.getFailCount());
         res.put("goodExtraScore", room.getGoodExtraScore());
-        res.put("evilExtraScore", room.getEvilExtraScore());
+        
 
         return ResponseEntity.ok(res);
     }
+
 
 
 

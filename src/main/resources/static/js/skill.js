@@ -49,6 +49,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     alert("無法取得你的角色，請重新進入遊戲");
     return;
   }
+  if (myRoleKey === "civilian-bad") {
+    const ultPanel = document.getElementById("civilian-ultimate-panel");
+    if (ultPanel) ultPanel.classList.add("hidden");
+  }
 
   if (skillRoleLabel) {
     skillRoleLabel.textContent = `角色：${myRoleName || "???"}`;
@@ -256,21 +260,27 @@ function connectSkillPhase() {
   console.log("🎭 Role check:", myRoleKey);
 
   if (isCivilianKey(myRoleKey)) {
-    if (finalRound) {
-      const ultPanelEl   = document.getElementById("civilian-ultimate-panel");
-      const waitingEl    = document.getElementById("waiting-panel");
-      const skillPanelEl = document.getElementById("my-skill-panel");
-      if (ultPanelEl) {
-        ultPanelEl.classList.remove("hidden");
-        fetchCivilianUltimateTargets();
-      }
-      waitingEl?.classList.add("hidden");
-      skillPanelEl?.classList.remove("hidden");
-    } else {
-      showImmersiveForRole(myRoleName);
-    }
+  const waitingEl    = document.getElementById("waiting-panel");
+  const skillPanelEl = document.getElementById("my-skill-panel");
+  const ultPanelEl   = document.getElementById("civilian-ultimate-panel");
+
+  // ✅ 若是邪惡平民，直接跳過猜人
+  if (myRoleKey === "civilian-bad") {
+    showImmersiveForRole(myRoleName);
     return;
   }
+
+  // ✅ 只有好平民在最後一輪會進入猜人面板
+  if (finalRound && ultPanelEl) {
+    ultPanelEl.classList.remove("hidden");
+    fetchCivilianUltimateTargets();
+    waitingEl?.classList.add("hidden");
+    skillPanelEl?.classList.remove("hidden");
+  } else {
+    showImmersiveForRole(myRoleName);
+  }
+  return;
+}
 
 
 
@@ -310,28 +320,40 @@ if (myRoleKey === "engineer") {
 }
 
 let usedFlag = false;
+
 switch (myRoleKey) {
   case "lurker": {
-    const lurkerUsedCount = room.lurkerSkillCount?.[playerName] || 0;
-    usedFlag = lurkerUsedCount >= 1; // ✅ 整場限一次
+    const usedCount = room.lurkerSkillCount?.[playerName] || 0;
+    usedFlag = usedCount >= 1; // 潛伏者整場限一次
     break;
   }
-  case "saboteur":
-    usedFlag = !!(room.usedSkillMap?.[playerName]);
-    break;
 
-  case "medic":
-    usedFlag = !!(room.medicSkillUsed?.[playerName]);
-    break;
-  case "shadow": {
-    const usedCount     = room.shadowSkillCount?.[playerName] || 0;
-    const usedThisRound = !!(room.shadowUsedThisRound?.includes(playerName));
-    usedFlag = usedCount >= 2 || usedThisRound;
+  case "saboteur": {
+    // ✅ 改成正確欄位 saboteurSkillCount（你後端已有這個 Map）
+    const usedCount = room.saboteurSkillCount?.[playerName] || 0;
+    usedFlag = usedCount >= 2; // 破壞者限兩次
     break;
   }
-  case "commander":
-    usedFlag = false;
+
+  case "medic": {
+    const usedMap = room.medicSkillUsed || {};
+    usedFlag = !!usedMap[playerName]; // 醫護兵整場限一次
     break;
+  }
+
+  case "shadow": {
+    const usedCount = room.shadowSkillCount?.[playerName] || 0;
+    const usedThisRound = !!(room.shadowUsedThisRound?.includes(playerName));
+    usedFlag = usedCount >= 2 || usedThisRound; // 影武者限 2 次
+    break;
+  }
+
+  case "commander": {
+    // ✅ 新增：指揮官限 2 次（與後端對應）
+    const usedCount = room.commanderSkillCount?.[playerName] || 0;
+    usedFlag = usedCount >= 2;
+    break;
+  }
 }
 
 if (usedFlag) {
