@@ -4,7 +4,7 @@ metadata:
   name: nginx-service
   namespace: special-group
 spec:
-  type: NodePort   # ⚡ NodePort，但不指定 nodePort，交給 K8s 自動分配
+  type: NodePort   
   selector:
     app: nginx
   ports:
